@@ -2,7 +2,3 @@
 
 class Image{
 };
-
-int main(){
-  return 0;
-}

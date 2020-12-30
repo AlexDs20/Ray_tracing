@@ -1,99 +1,79 @@
 #include <iostream>
 #include <math.h>
-
-struct triplet{
-  double x, y, z;
-
-  // Constructors
-  triplet(){x=0;y=0;z=0;};
-  triplet(double a, double b, double c){
-    x = a;
-    y = b;
-    z = c;
-  };
-  void print(){
-    std::cout << "(" << x << "," << y << "," << z << ")" << std::endl;
-  }
-};
-
-
-class Vector3{
-    triplet start_, dir_, end_;
-
-  public:
-    // Constructors
-    Vector3();         // Given the direction
-    Vector3(const triplet&);         // Given the direction
-    Vector3(const triplet&, const triplet&);   // Given the start and end point
-
-    // Methods
-    triplet head();
-    double norm();
-    double norm2();
-    double dot(const Vector3&);
-    Vector3 cross(const Vector3&);
-    void print();
-
-};
+#include "triplet.h"
+#include "Vector3.h"
 
 Vector3::Vector3(){
-  this->dir_.x = 0;
-  this->dir_.y = 0;
-  this->dir_.z = 0;
-  this->start_.x = 0;
-  this->start_.y = 0;
-  this->start_.z = 0;
+  this->dir_ = triplet();
+  this->start_ = triplet();
 }
 
 Vector3::Vector3(const triplet &vec){
-  this->dir_.x = vec.x;
-  this->dir_.y = vec.y;
-  this->dir_.z = vec.z;
-  this->start_.x = 0;
-  this->start_.y = 0;
-  this->start_.z = 0;
+  this->dir_ = vec;
+  this->start_ = triplet();
 }
 
 Vector3::Vector3(const triplet &start, const triplet &end){
-  this->start_.x = start.x;
-  this->dir_.x = end.x - start.x;
-  this->end_.x = end.x;
-
-  this->start_.y = start.y;
-  this->dir_.y = end.y - start.y;
-  this->end_.y = end.y;
-
-  this->start_.z = start.z;
-  this->dir_.z = end.z - start.z;
-  this->end_.z = end.z;
+  this->start_ = start;
+  this->end_ = end;
+  this->dir_ = this->end_ - this->start_;
 }
 
-triplet Vector3::head(){
-  triplet out;
-  out.x = this->start_.x + this->dir_.x;
-  out.y = this->start_.y + this->dir_.y;
-  out.z = this->start_.z + this->dir_.z;
-  return out;
+Vector3 Vector3::operator+ (const Vector3 &rhs){
+  Vector3 v_out(this->dir_+rhs.dir_);
+  v_out.set_start(this->start_);
+  v_out.end_ = triplet(v_out.end());
+  return v_out;
+}
+
+Vector3 Vector3::operator- (const Vector3 &rhs){
+  Vector3 v_out(this->dir_+rhs.dir_);
+  v_out.set_start(this->start_);
+  v_out.end_ = triplet(v_out.end());
+  return v_out;
+}
+
+Vector3 Vector3::operator* (const double &rhs){
+  Vector3 v_out(this->dir_*rhs);
+  v_out.set_start(this->start_);
+  v_out.end_ = triplet(v_out.end());
+  return v_out;
+}
+
+Vector3 Vector3::operator/ (const double &rhs){
+  Vector3 v_out(this->dir_/rhs);
+  v_out.set_start(this->start_);
+  v_out.end_ = triplet(v_out.end());
+  return v_out;
+}
+
+void Vector3::set_start(const triplet& start){
+  this->start_ = start;
+}
+
+
+triplet Vector3::end(){
+  return this->start_+this->dir_;
+}
+
+triplet Vector3::unit(){
+  return this->dir_/this->norm();
 }
 
 double Vector3::norm(){
-  return sqrt(this->norm());
+  return this->dir_.norm();
 }
 
 double Vector3::norm2(){
-  return dir_.x*dir_.x + dir_.y*dir_.y + dir_.z*dir_.z;
+  return this->dir_.norm2();
 }
 
 double Vector3::dot(const Vector3 &vec){
-  return vec.dir_.x*this->dir_.x + vec.dir_.y*this->dir_.y + vec.dir_.z*this->dir_.z;
+  return this->dir_.dot(vec.dir_);
 }
 
 Vector3 Vector3::cross(const Vector3 &vec){
-  Vector3 out;
-  out.dir_.x = this->dir_.y * vec.dir_.z - this->dir_.z * vec.dir_.y;
-  out.dir_.y = this->dir_.z * vec.dir_.x - this->dir_.x * vec.dir_.z;
-  out.dir_.z = this->dir_.x * vec.dir_.y - this->dir_.y * vec.dir_.x;
-  return out;
+  return Vector3(this->dir_.cross(vec.dir_));
 }
 
 void Vector3::print(){
@@ -104,22 +84,3 @@ void Vector3::print(){
 
 }
 
-int main()
-{
-  //-------------------
-  triplet dir(1, 2, 3);
-  Vector3 vec(dir);
-
-
-  //-------------------
-  triplet start(1,1,1);
-  triplet end(2,2,2);
-  Vector3 vec_new(start, end);
-  vec_new.print();
-  vec_new.head().print();
-
-  (vec.cross(vec_new)).print();
-  //-------------------
-
-  return 0;
-}

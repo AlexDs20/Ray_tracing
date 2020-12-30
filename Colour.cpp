@@ -45,23 +45,23 @@ void save_PPM(const std::string &filename, int WIDTH, int HEIGHT){
 }
 
 
-int main(){
-
-  std::string code = "#AAFF00";
-
-  Colour col(code);
-  col.to_rgb();
-  col.print_rgb();
-
-  Colour r(255, 0, 0);
-  r.to_hex();
-  r.print_hex();
-
-  const int WIDTH = 640;
-  const int HEIGHT= 480;
-
-  std::string s = "Image.ppm";
-  save_PPM(s, WIDTH, HEIGHT);
-
-  return 0;
-}
+//int main(){
+//
+//  std::string code = "#AAFF00";
+//
+//  Colour col(code);
+//  col.to_rgb();
+//  col.print_rgb();
+//
+//  Colour r(255, 0, 0);
+//  r.to_hex();
+//  r.print_hex();
+//
+//  const int WIDTH = 640;
+//  const int HEIGHT= 480;
+//
+//  std::string s = "Image.ppm";
+//  save_PPM(s, WIDTH, HEIGHT);
+//
+//  return 0;
+//}
