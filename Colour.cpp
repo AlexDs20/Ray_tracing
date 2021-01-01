@@ -1,67 +1,66 @@
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <fstream>
+#include "math.h"
+#include "Colour.h"
 
-struct Colour{
-  public:
-    std::string hex_;
-    std::int16_t r_, g_, b_;
-
-  public:
-    Colour(std::string col){
-      hex_ = col;
-    }
-    Colour(const short &R, const short &G, const short &B){
-      r_ = R;
-      g_ = G;
-      b_ = B;
-    }
-    void to_rgb(){
-      r_ = std::stoi(hex_.substr(1, 2), 0, 16);
-      g_ = std::stoi(hex_.substr(3, 2), 0, 16);
-      b_ = std::stoi(hex_.substr(5, 2), 0, 16);
-    }
-    void to_hex(){
-      hex_.erase();
-      std::stringstream ss(hex_);
-      ss << "#" << std::hex << (r_ << 16 | g_ << 8 | b_);
-      hex_ = ss.str();
-    }
-    void print_rgb(){ std::cout << r_ << " " << g_ << " " << b_ << std::endl;}
-    void print_hex(){ std::cout << hex_ << std::endl;}
-};
-
-void save_PPM(const std::string &filename, int WIDTH, int HEIGHT){
-  std::fstream file(filename, std::fstream::out);
-  file << "P6\n" << WIDTH << " " << HEIGHT << "\n255\n";
-
-  for (short i=0;i<HEIGHT; i++){
-    for (short j=0;j<WIDTH; j++)
-      file << (char) (i % 256) << (char) (j % 256) << (char) (0);
-  }
-
-  file.close();
+Colour::Colour(std::string hex) {
+  r_ = std::stoi(hex.substr(1, 2), 0, 16);
+  g_ = std::stoi(hex.substr(3, 2), 0, 16);
+  b_ = std::stoi(hex.substr(5, 2), 0, 16);
 }
 
+Colour::Colour(const char* hex){
+  // TODO: This is not memory safe!
+  //  Check the size and if hex[0] = '#'
+  char R[] = {hex[1], hex[2], '\0'};
+  char G[] = {hex[3], hex[4], '\0'};
+  char B[] = {hex[5], hex[6], '\0'};
+  r_ = (int16_t)strtol(R, NULL, 16);
+  g_ = (int16_t)strtol(G, NULL, 16);
+  b_ = (int16_t)strtol(B, NULL, 16);
+}
 
-//int main(){
-//
-//  std::string code = "#AAFF00";
-//
-//  Colour col(code);
-//  col.to_rgb();
-//  col.print_rgb();
-//
-//  Colour r(255, 0, 0);
-//  r.to_hex();
-//  r.print_hex();
-//
-//  const int WIDTH = 640;
-//  const int HEIGHT= 480;
-//
-//  std::string s = "Image.ppm";
-//  save_PPM(s, WIDTH, HEIGHT);
-//
-//  return 0;
-//}
+std::string Colour::to_hex(){
+  std::string hex;
+  std::stringstream ss(hex);
+  ss << "#" << std::hex << (r_ << 16 | g_ << 8 | b_);
+  hex = ss.str();
+  return hex;
+}
+
+void Colour::print_rgb(){
+  std::cout << r_ << " " << g_ << " " << b_ << std::endl;
+}
+
+void Colour::print_hex(){
+  std::cout << this->to_hex() << std::endl;
+}
+
+Colour Colour::operator+(const Colour &lhs){
+  int16_t r = std::min(r_+lhs.r_, 255);
+  int16_t g = std::min(g_+lhs.g_, 255);
+  int16_t b = std::min(b_+lhs.b_, 255);
+  return Colour(r, g, b);
+}
+
+Colour Colour::operator-(const Colour &lhs){
+  int16_t r = std::max(r_-lhs.r_, 0);
+  int16_t g = std::max(g_-lhs.g_, 0);
+  int16_t b = std::max(b_-lhs.b_, 0);
+  return Colour(r, g, b);
+}
+
+Colour Colour::operator* (const double &scale){
+  int16_t r = std::max(std::min((int)(r_*scale), 255), 0);
+  int16_t g = std::max(std::min((int)(g_*scale), 255), 0);
+  int16_t b = std::max(std::min((int)(b_*scale), 255), 0);
+  return Colour(r, g, b);
+}
+
+Colour Colour::operator/ (const double &scale){
+  int16_t r = std::max(std::min((int)(r_/scale), 255), 0);
+  int16_t g = std::max(std::min((int)(g_/scale), 255), 0);
+  int16_t b = std::max(std::min((int)(b_/scale), 255), 0);
+  return Colour(r, g, b);
+}

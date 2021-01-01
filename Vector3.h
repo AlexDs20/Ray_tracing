@@ -1,30 +1,14 @@
 #pragma once
 
-#include "triplet.h"
+#include "Triplet.h"
 
-class Vector3{
-    triplet start_, dir_, end_;
-
+class Vector3 : public Triplet {
   public:
-    // Constructors
-    Vector3();         // Given the direction
-    Vector3(const triplet&);         // Given the direction
-    Vector3(const triplet&, const triplet&);   // Given the start and end point
+    Triplet start_;
 
-    // Operators
-    Vector3 operator+ (const Vector3&);         // Add 2 vectors
-    Vector3 operator- (const Vector3&);         // Substract 2 vectors
-    Vector3 operator* (const double&);          // Product by scalar
-    Vector3 operator/ (const double&);          // Division by scalar
-
-    // Methods
-    void set_start(const triplet&);
-    triplet end();
-    triplet unit();
-    double norm();
-    double norm2();
-    double dot(const Vector3&);
-    Vector3 cross(const Vector3&);
-    void print();
-
+    Vector3() : Triplet(), start_(0,0,0) {};
+    Vector3(double _x, double _y, double _z) : Triplet(_x, _y, _z), start_(0,0,0) {}
+    Vector3(double _sx, double _sy, double _sz, double _ex, double _ey, double _ez) : \
+                              Triplet (_ex-_sx, _ey-_sy, _ez-_sz), start_(_sx, _sy, _sz) {}
+    Triplet end() { return *this + start_; }
 };
