@@ -1,8 +1,12 @@
 #include <iostream>
+
 #include "Vector3.h"
 #include "Triplet.h"
 #include "Colour.h"
 #include "Image.h"
+#include "Triangle.h"
+
+#include "Intersections.h"
 
 int main()
 {
@@ -19,7 +23,7 @@ if (0) {
   vec1 += vec2;
   std::cout << vec1 << std::endl;
 
-  std::cout << vec2.start_ << std::endl;
+  std::cout << vec2.start << std::endl;
   std::cout << vec2.end() << std::endl;
   std::cout << vec1.norm() << std::endl;
   std::cout << vec1.norm2() << std::endl;
@@ -51,10 +55,22 @@ if (0){
   (color1/2).print_rgb();
 }
 
-if (1){
+if (0){
   Colour red(255,255,0);
   Image img(1024, 768, red);
   img.save_PPM("Image.ppm");
 }
+
+if (1){
+  Vector3 ray(0.2,0.2,10,0.2,0.2,9);
+  Triplet A(0,0,0);
+  Triplet B(1,0,0);
+  Triplet C(0,1,0);
+  const Triangle tri(A,B,C);
+  double t=0;
+  intersection_triangle(ray, tri, t);
+  std::cout << ray(t) << std::endl;
+}
+
   return 0;
 }

@@ -1,6 +1,9 @@
 # Folder with Documentation
 Docs/
 
+# Directory related to building the program
+build/
+
 # Rendered PPM Image
 *.ppm
 
