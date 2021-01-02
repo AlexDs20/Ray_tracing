@@ -23,7 +23,7 @@ struct Colour{
     void print_rgb() const;
     void print_hex() const;
 
-    // TODO: Overload operators +=, -=, *= and /=
+    // Operators
     Colour operator+ (const Colour&) const;
     Colour operator- (const Colour&) const;
     Colour operator* (const double&) const;

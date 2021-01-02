@@ -2,19 +2,7 @@
 #include "Vector3.h"
 #include "Triplet.h"
 #include "Colour.h"
-
-#include <fstream>
-void save_PPM(const std::string &filename, int WIDTH, int HEIGHT){
-  std::fstream file(filename, std::fstream::out);
-  file << "P6\n" << WIDTH << " " << HEIGHT << "\n255\n";
-
-  for (short i=0;i<HEIGHT; i++){
-    for (short j=0;j<WIDTH; j++)
-      file << (char) (i % 256) <<  (char) (j % 256) << (char)(0);
-  }
-
-  file.close();
-}
+#include "Image.h"
 
 int main()
 {
@@ -50,7 +38,7 @@ if (0) {
   std::cout << vec1.unit() << std::endl;;
 }
 
-if (1){
+if (0){
   //-------------------
   Colour color1(170, 21, 33);
   color1.print_rgb();
@@ -63,6 +51,10 @@ if (1){
   (color1/2).print_rgb();
 }
 
-//  save_PPM("IMAGE.ppm", 320, 240);
+if (1){
+  Colour red(255,255,0);
+  Image img(1024, 768, red);
+  img.save_PPM("Image.ppm");
+}
   return 0;
 }
