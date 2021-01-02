@@ -13,9 +13,11 @@
 - [x] Vector3 Class
 - [x] Image class. To have an array representing each pixel
 - [x] Intersection between a ray and a triangle
+- [x] Collision between ray and sphere.
 
 # TODO
-- [ ] Collision between ray and sphere.
+- [ ] Make a geometry class (which has a color, and I guess later, texture,
+  roughness, ...) and Triangle a daughter of it.
 - [ ] Collision between rays and general objects.
 - [ ] Use R-tree?
 - [ ] Read Blender OBJ files

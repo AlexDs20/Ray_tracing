@@ -19,9 +19,7 @@ class Vector3 : public Triplet {
     }
 
     // Operators
-    Triplet operator() (const double &scale) const {
-      std::cout << "Start: " << start << std::endl;
-      std::cout << "Direction: " << *this << std::endl;
+    const Triplet operator() (const double &scale) const {
       return start + scale*(*this);
     }
 

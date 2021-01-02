@@ -4,7 +4,7 @@
 #include "Triplet.h"
 #include "Colour.h"
 #include "Image.h"
-#include "Triangle.h"
+#include "Geometries.h"
 
 #include "Intersections.h"
 
@@ -62,14 +62,27 @@ if (0){
 }
 
 if (1){
-  Vector3 ray(0.2,0.2,10,0.2,0.2,9);
+  Vector3 ray(0.2,0.2,1,0.2,0.2,-1);
   Triplet A(0,0,0);
   Triplet B(1,0,0);
   Triplet C(0,1,0);
   const Triangle tri(A,B,C);
   double t=0;
-  intersection_triangle(ray, tri, t);
-  std::cout << ray(t) << std::endl;
+  bool intersect;
+  intersect = intersection_triangle(ray, tri, t);
+  if (intersect)
+    std::cout << "Ray hitting the triangle at: " << ray(t) << std::endl;
+}
+
+if (1){
+  Vector3 ray(0,0,10, 0,1,-5);
+  Triplet c(0,0,0);
+  Sphere sph(c, 1);
+  double t=0;
+  bool intersect;
+  intersect = intersection_sphere(ray, sph, t);
+  if (intersect)
+    std::cout << "Ray hitting the sphere at: " << ray(t) << std::endl;
 }
 
   return 0;
