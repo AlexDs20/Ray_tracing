@@ -4,7 +4,7 @@
 #include "Colour.h"
 
 class Image{
-  public:
+  private:
     const unsigned int w, h;
     Colour *pixels;
 
@@ -28,10 +28,11 @@ class Image{
     void save_PPM(const std::string &filename){
       std::fstream file(filename, std::fstream::out);
       file << "P3\n" << w << " " << h << "\n255\n";
+//      file << "P6\n" << w << " " << h << "\n255\n";
 
-      for (unsigned int i=0; i<w*h; ++i){
+      for (unsigned int i=0; i<w*h; ++i)
           file << pixels[i].r() << ' ' << pixels[i].g() << ' ' << pixels[i].b() << ' ';
-      }
+//          file << (char) pixels[i].r() << (char) pixels[i].g() << (char) pixels[i].b();
 
       file.close();
     }
