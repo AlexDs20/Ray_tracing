@@ -11,11 +11,12 @@
 - [x] Triplet Class
 - [x] Colour Class
 - [x] Vector3 Class
+- [x] Image class. To have an array representing each pixel
+- [x] Intersection between a ray and a triangle
 
 # TODO
-- [ ] Image class. To have an array representing each pixel which have a
-  defined colour.
-- [ ] Collision detection between ray and an object. Start simple and only work
-  with spheres. use R-tree?
+- [ ] Collision between ray and sphere.
+- [ ] Collision between rays and general objects.
+- [ ] Use R-tree?
 - [ ] Read Blender OBJ files
 
