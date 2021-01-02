@@ -18,7 +18,7 @@ void save_PPM(const std::string &filename, int WIDTH, int HEIGHT){
 
 int main()
 {
-if (1) {
+if (0) {
   //-------------------
   // Null vector
   Triplet vec0;
@@ -48,7 +48,9 @@ if (1) {
   std::cout << vec1 / 2 << std::endl;
 
   std::cout << vec1.unit() << std::endl;;
+}
 
+if (1){
   //-------------------
   Colour color1(170, 21, 33);
   color1.print_rgb();
@@ -57,7 +59,7 @@ if (1) {
   Colour color2(150, 0, 50);
   (color1 + color2).print_rgb();
   (color1 - color2).print_rgb();
-  (color1*2).print_rgb();
+  (2*color1).print_rgb();
   (color1/2).print_rgb();
 }
 

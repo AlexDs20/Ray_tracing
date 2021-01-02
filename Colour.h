@@ -11,14 +11,36 @@ struct Colour{
     Colour(std::string);
     Colour(const char*);
 
-    std::string to_hex();
+    std::int16_t r() const { return r_; }
+    std::int16_t g() const { return g_; }
+    std::int16_t b() const { return b_; }
+    std::int16_t& r() { return r_; }
+    std::int16_t& g() { return g_; }
+    std::int16_t& b() { return b_; }
 
-    void print_rgb();
-    void print_hex();
+    std::string to_hex() const;
+
+    void print_rgb() const;
+    void print_hex() const;
 
     // TODO: Overload operators +=, -=, *= and /=
-    Colour operator+ (const Colour&);
-    Colour operator- (const Colour&);
-    Colour operator* (const double&);
-    Colour operator/ (const double&);
+    Colour operator+ (const Colour&) const;
+    Colour operator- (const Colour&) const;
+    Colour operator* (const double&) const;
+    Colour operator/ (const double&) const;
+
+    Colour operator+= (const Colour&);
+    Colour operator-= (const Colour&);
+    Colour operator*= (const double&);
+    Colour operator/= (const double&);
+    bool operator!= (const Colour&) const;
+    bool operator== (const Colour&) const;
 };
+
+inline Colour operator*(const double &lhs, const Colour &c){
+  return c*lhs;
+}
+
+inline std::ostream& operator<< (std::ostream& out, const Colour &c) {
+  return out << "(" << c.r() << "," << c.g() << "," << c.b() << ")";
+}

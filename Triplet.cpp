@@ -26,7 +26,10 @@ Triplet Triplet::operator+= (const Triplet &rhs) {
 }
 
 Triplet Triplet::operator-= (const Triplet &rhs) {
-  return *this += - rhs;
+  t[0] -= rhs.x();
+  t[1] -= rhs.y();
+  t[2] -= rhs.z();
+  return *this;
 }
 
 Triplet Triplet::operator*= (const double &rhs) {
@@ -37,7 +40,10 @@ Triplet Triplet::operator*= (const double &rhs) {
 }
 
 Triplet Triplet::operator/= (const double &rhs) {
-  return *this *= (1/rhs);
+  t[0] /= rhs;
+  t[1] /= rhs;
+  t[2] /= rhs;
+  return *this;
 }
 
 bool Triplet::operator==(const Triplet &rhs) const {
