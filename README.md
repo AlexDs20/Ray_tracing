@@ -1,7 +1,8 @@
 # Ray tracing
+In dev. Obviously.
 
-Example of a rendered triangle
-![](rendered/triangle.ppm)
+Example of a rendered triangle using ray-tracing
+![](rendered/triangle.png)
 
 # References
 * General idea: https://www.youtube.com/watch?v=gBPNO6ruevk

@@ -4,6 +4,9 @@ Docs/
 # Directory related to building the program
 build/
 
+# Rendered images
+*.ppm
+
 # Prerequisites
 *.d
 
