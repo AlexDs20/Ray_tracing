@@ -1,5 +1,8 @@
 # Ray tracing
 
+Example of a rendered triangle
+![](rendered/triangle.ppm)
+
 # References
 * General idea: https://www.youtube.com/watch?v=gBPNO6ruevk
 * Reference book: Ray-tracing gems: http://www.realtimerendering.com/raytracinggems/
@@ -14,11 +17,13 @@
 - [x] Image class. To have an array representing each pixel
 - [x] Intersection between a ray and a triangle
 - [x] Collision between ray and sphere.
+- [x] Make the camera class
+- [x] Make a geometry class (which has a color, and I guess later, texture,
+  roughness, ...) and Triangle a daughter of it.
 
 # TODO
-- [ ] Make the camera class
-- [ ] Make a geometry class (which has a color, and I guess later, texture,
-  roughness, ...) and Triangle a daughter of it.
+- [ ] Properly treat several objects and go through them for rendering
+- [ ] input to main -> filename
 - [ ] Collision between rays and general objects.
 - [ ] Use R-tree?
 - [ ] Read Blender OBJ files
