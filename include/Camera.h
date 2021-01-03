@@ -24,12 +24,13 @@ class Screen{
 };
 
 class Camera{
-  public:
-    Vector3 dir;
-    double dist_screen;
+  private:
+    const Vector3 dir;
+    const double dist_screen;
     Screen screen;
     Image img;
 
+  public:
     // Constructors
     Camera();
     Camera(const Vector3 &pos_dir_camera_, const double &dist_, \
@@ -37,7 +38,7 @@ class Camera{
           const double &pix_size_, const Colour &bg_);
 
     // Methods
-    void render(const Triangle &obj_) const;
+    void render(const Sphere &obj_) const;
     void save_image(const std::string &filename);
 };
 

@@ -1,5 +1,6 @@
 #include "Camera.h"
 
+// Screen Class
 Screen::Screen() : pixel_size(1), y(Triplet(0,1,0)), z(Triplet(0,0,1)), w(1024), h(768) {}
 
 Screen::Screen(const double &pix_, const unsigned int &w_, const unsigned int &h_, \
@@ -29,6 +30,7 @@ const Triplet Screen::pixel_pos(const unsigned int &i, const unsigned int &j) co
 }
 
 
+// Camera Class
 Camera::Camera() : dir(Vector3(1,0,0)), dist_screen(1), screen(0.1, 1024, 768, Triplet(1,0,0)), img(1024,768) {}
 
 Camera::Camera(const Vector3 &pos_dir_camera_, const double &dist_, \
@@ -36,7 +38,7 @@ Camera::Camera(const Vector3 &pos_dir_camera_, const double &dist_, \
               const double &pix_size_, const Colour &bg_)\
     : dir(pos_dir_camera_), dist_screen(dist_), screen(pix_size_, w_, h_, dir), img(w_, h_, bg_) {}
 
-void Camera::render(const Triangle &obj_) const {
+void Camera::render(const Sphere &obj_) const {
   Triplet center_screen = dir(dist_screen);
   Triplet S = dir.start;
   Triplet E;

@@ -68,7 +68,7 @@ if (0){
   Triplet A(0,0,0);
   Triplet B(1,0,0);
   Triplet C(0,1,0);
-  const Triangle tri(A,B,C);
+  const Triangle tri(A,B,C,Colour(255,255,0));
   std::cout << tri.get_colour() << std::endl;
   double t=0;
   bool intersect;
@@ -102,15 +102,15 @@ if (1){
   Camera camera(cam_vec, 0.1, 1024, 768, 0.001, Colour(0,0,0));
 
   // Create the scene
-  Triplet A(0,0,1);
-  Triplet B(1,0,0);
-  Triplet C(0,1,0);
-  Triangle tri(A,B,C);
+//  Triplet A(0,0,1);
+//  Triplet B(1,0,0);
+//  Triplet C(0,1,0);
+//  Triangle tri(A,B,C,Colour(255,255,255));
 
-//  Triplet c(0,0,0);
-//  Sphere sph(c, 1, Colour(0,255,0));
+  Triplet c(0,0,0);
+  Sphere sph(c, 1, Colour(0,255,0));
 
-  camera.render(tri);
+  camera.render(sph);
   const std::string filename = "Image.ppm";
   camera.save_image(filename);
 }
