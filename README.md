@@ -16,6 +16,7 @@
 - [x] Collision between ray and sphere.
 
 # TODO
+- [ ] Make the camera class
 - [ ] Make a geometry class (which has a color, and I guess later, texture,
   roughness, ...) and Triangle a daughter of it.
 - [ ] Collision between rays and general objects.

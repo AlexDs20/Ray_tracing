@@ -10,7 +10,7 @@ class Image{
     Colour *pixels;
 
   public:
-    Image() : w(0), h(0) {}
+    Image() : w(1024), h(768) {}
     Image(const unsigned w_, const unsigned h_, const Colour &bg = Colour(0,0,0)) : w(w_), h(h_), pixels(nullptr) {
       pixels = new Colour[w*h];
       for (size_t i=0; i<w*h; ++i)

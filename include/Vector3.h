@@ -8,14 +8,19 @@ class Vector3 : public Triplet {
 
     // Constructors
     Vector3() : Triplet(), start(0,0,0) {};
-    Vector3(double _x, double _y, double _z) : Triplet(_x, _y, _z), start(0,0,0) {}
-    Vector3(double _sx, double _sy, double _sz, double _ex, double _ey, double _ez) : \
-                              Triplet(_ex-_sx, _ey-_sy, _ez-_sz), start(_sx, _sy, _sz) {}
-    Vector3(Triplet _A, Triplet _B){
-      start = _A;
-      t[0] = _B.x() - _A.x();
-      t[1] = _B.y() - _A.y();
-      t[2] = _B.z() - _A.z();
+    Vector3(Triplet A_) {
+      t[0] = A_.x();
+      t[1] = A_.y();
+      t[2] = A_.z();
+    }
+    Vector3(double x_, double y_, double z_) : Triplet(x_, y_, z_), start(0,0,0) {}
+    Vector3(double sx_, double sy_, double sz_, double ex_, double ey_, double ez_) : \
+                              Triplet(ex_-sx_, ey_-sy_, ez_-sz_), start(sx_, sy_, sz_) {}
+    Vector3(Triplet A_, Triplet B_){
+      start = A_;
+      t[0] = B_.x() - A_.x();
+      t[1] = B_.y() - A_.y();
+      t[2] = B_.z() - A_.z();
     }
 
     // Operators

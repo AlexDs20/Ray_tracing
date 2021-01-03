@@ -8,11 +8,16 @@ class Triplet{
 
     // Constructors
     Triplet() : t{0,0,0} {}
-    Triplet(double _x, double _y, double _z) : t{_x, _y, _z} {}
+    Triplet(double x_, double y_, double z_) : t{x_, y_, z_} {}
 
     double x() const { return t[0]; }
     double y() const { return t[1]; }
     double z() const { return t[2]; }
+
+    double& x() { return t[0]; }
+    double& y() { return t[1]; }
+    double& z() { return t[2]; }
+
 
     // Operators
     Triplet operator+ (const Triplet&) const;         // Add 2 Triplets

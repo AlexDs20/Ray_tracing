@@ -1,31 +1,51 @@
 #pragma once
 #include "Triplet.h"
 #include "Vector3.h"
+#include "Colour.h"
 
 #include "Define.h"
 
-struct Triangle{
+struct Geometry{
+  private:
+    Colour colour;
+
+  public:
+    Geometry() : colour(Colour(0,0,255)) {}
+    Geometry(const Colour &c_) : colour(c_) {}
+
+    void set_colour(const Colour &c_){
+      colour = c_;
+    }
+
+    const Colour get_colour() const{
+      return colour;
+    }
+};
+
+struct Triangle : public Geometry{
   public:
     Triplet A, B, C;
     Vector3 AB, AC;
 
   public:
-    Triangle() : A(), B(), C() {}
-    Triangle(Triplet _A, Triplet _B, Triplet _C) : A(_A), B(_B), C(_C), AB(_A,_B), AC(_A,_C) {}
+    Triangle() : Geometry(), A(), B(), C() {}
+    Triangle(Triplet A_, Triplet B_, Triplet C_, const Colour &c_ = Colour(0,0,255)) : \
+      Geometry(c_), A(A_), B(B_), C(C_), AB(A_,B_), AC(A_,C_) {}
 
     const Triplet normal() const {
       return AB.cross(AC);
     }
 };
 
-struct Sphere{
+struct Sphere : public Geometry{
   public:
     Triplet center;
     double radius;
 
   public:
-    Sphere() : center(), radius(1) {}
-    Sphere(Triplet _c, double _r) : center(_c), radius(_r) {}
+    Sphere() : Geometry(), center(), radius(1) {}
+    Sphere(Triplet center_, double radius_, const Colour &colour_ = Colour(0,0,255)) : \
+      Geometry(colour_), center(center_), radius(radius_) {}
 
     const Triplet normal(const Triplet &pos) const {
       // check if p is on surface

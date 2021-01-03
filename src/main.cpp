@@ -5,6 +5,7 @@
 #include "Colour.h"
 #include "Image.h"
 #include "Geometries.h"
+#include "Camera.h"
 
 #include "Intersections.h"
 
@@ -61,12 +62,13 @@ if (0){
   img.save_PPM("Image.ppm");
 }
 
-if (1){
+if (0){
   Vector3 ray(0.2,0.2,1,0.2,0.2,-1);
   Triplet A(0,0,0);
   Triplet B(1,0,0);
   Triplet C(0,1,0);
   const Triangle tri(A,B,C);
+  std::cout << tri.get_colour() << std::endl;
   double t=0;
   bool intersect;
   intersect = intersection_triangle(ray, tri, t);
@@ -74,15 +76,21 @@ if (1){
     std::cout << "Ray hitting the triangle at: " << ray(t) << std::endl;
 }
 
-if (1){
+if (0){
   Vector3 ray(0,0,10, 0,1,-5);
   Triplet c(0,0,0);
-  Sphere sph(c, 1);
+  Sphere sph(c, 1, Colour(0,255,0));
   double t=0;
   bool intersect;
   intersect = intersection_sphere(ray, sph, t);
   if (intersect)
     std::cout << "Ray hitting the sphere at: " << ray(t) << std::endl;
+}
+
+if (1){
+  Screen screen(0.1, 1024, 768, Triplet(0,0,1));
+  std::cout << screen.pixel_pos(0,0) << std::endl;
+  std::cout << screen.pixel_pos(1023, 767) << std::endl;
 }
 
   return 0;
