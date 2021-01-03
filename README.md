@@ -2,7 +2,7 @@
 In dev. Obviously.
 
 Example of a rendered triangle using ray-tracing
-![](rendered/triangle.png)
+![](rendered/Triangle.png)
 
 # References
 * General idea: https://www.youtube.com/watch?v=gBPNO6ruevk
