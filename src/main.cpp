@@ -1,4 +1,7 @@
 #include <iostream>
+#include <vector>
+#include <memory>
+#include <string>
 
 #include "Vector3.h"
 #include "Triplet.h"
@@ -6,8 +9,6 @@
 #include "Image.h"
 #include "Geometries.h"
 #include "Camera.h"
-
-#include "Intersections.h"
 
 int main()
 {
@@ -71,7 +72,7 @@ if (0){
   std::cout << tri.get_colour() << std::endl;
   double t=0;
   bool intersect;
-  intersect = intersection_triangle(ray, tri, t);
+  intersect = tri.intersect(ray, t);
   if (intersect)
     std::cout << "Ray hitting the triangle at: " << ray(t) << std::endl;
 }
@@ -82,15 +83,36 @@ if (0){
   Sphere sph(c, 1, Colour(0,255,0));
   double t=0;
   bool intersect;
-  intersect = intersection_sphere(ray, sph, t);
+  intersect = sph.intersect(ray, t);
   if (intersect)
     std::cout << "Ray hitting the sphere at: " << ray(t) << std::endl;
 }
 
-if (1){
+if (0){
   Screen screen(0.1, 1024, 768, Triplet(0,0,1));
   std::cout << screen.pixel_pos(0,0) << std::endl;
   std::cout << screen.pixel_pos(1023, 767) << std::endl;
+}
+
+if (1){
+  // Create the camera
+  Triplet cam_pos(0,0,2);
+  Triplet cam_look(0,0,0);
+  Vector3 cam_vec(cam_pos, cam_look);
+  Camera camera(cam_vec, 0.1, 1024, 768, 0.001, Colour(0,0,0));
+
+  // Create the scene
+  Triplet A(0,0,1);
+  Triplet B(1,0,0);
+  Triplet C(0,1,0);
+  Triangle tri(A,B,C);
+
+//  Triplet c(0,0,0);
+//  Sphere sph(c, 1, Colour(0,255,0));
+
+  camera.render(tri);
+  const std::string filename = "Image.ppm";
+  camera.save_image(filename);
 }
 
   return 0;

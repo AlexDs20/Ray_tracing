@@ -21,9 +21,9 @@ class Image{
         delete [] pixels;
     }
 
-    void set (unsigned int i, unsigned int j, const Colour& c){
+    void set(unsigned int i, unsigned int j, const Colour& c) const {
       if (i<=w && j<=h)
-        pixels[j*w+i] = c;
+        this->pixels[j*w+i] = c;
     }
 
     void save_PPM(const std::string &filename){
