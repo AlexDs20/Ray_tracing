@@ -96,7 +96,7 @@ if (0){
 
 if (1){
   // Create the camera
-  Triplet cam_pos(0,0,2);
+  Triplet cam_pos(2,0,2);
   Triplet cam_look(0,0,0);
   Vector3 cam_vec(cam_pos, cam_look);
   Camera camera(cam_vec, 0.1, 1024, 768, 0.001, Colour(0,0,0));

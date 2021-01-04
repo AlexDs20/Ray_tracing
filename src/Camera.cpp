@@ -6,7 +6,7 @@ Screen::Screen() : pixel_size(1), y(Triplet(0,1,0)), z(Triplet(0,0,1)), w(1024),
 Screen::Screen(const double &pix_, const unsigned int &w_, const unsigned int &h_, \
               const Triplet &dir_) : pixel_size(pix_), w(w_), h(h_) {
 
-    Triplet dir = dir_/dir_.norm();
+    Triplet dir = dir_.unit();
     if (dir == Triplet(0,0,1)){
       z = Triplet(0,1,0);
       y = Triplet(1,0,0);
@@ -14,10 +14,8 @@ Screen::Screen(const double &pix_, const unsigned int &w_, const unsigned int &h
       z = Triplet(0,1,0);
       y = Triplet(-1,0,0);
     } else {
-      z = Triplet(0,0,1) - Triplet(0,0,1).dot(dir) * dir;
-      z /= z.norm();
-      y = z.cross(dir);
-      y /= y.norm();
+      z = (Triplet(0,0,1) - Triplet(0,0,1).dot(dir) * dir).unit();
+      y = z.cross(dir).unit();
     }
 
     Triplet row = ( (h-(h+1)%2) /2. ) *pixel_size*z;
