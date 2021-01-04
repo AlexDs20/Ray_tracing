@@ -24,7 +24,7 @@ Triangle::Triangle(const Triplet &A_, const Triplet &B_, const Triplet &C_, cons
           : Geometry(colour_), A(A_), B(B_), C(C_), AB(A_,B_), AC(A_,C_) {}
 
 Triplet Triangle::normal() const {
-  return AB.cross(AC);
+  return AB.cross(AC).unit();
 }
 
 bool Triangle::intersect(const Vector3 &ray, double &t) const {
@@ -57,7 +57,7 @@ const Triplet Sphere::normal(const Triplet &pos) const {
   // check if p is on surface
   double dist_to_center = (pos-center).norm();
   if (dist_to_center-radius < EPS && dist_to_center-radius > -EPS )
-    return (pos-center)/(pos-center).norm();
+    return (pos-center).unit();
   return Triplet();
 }
 
