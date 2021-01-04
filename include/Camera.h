@@ -38,7 +38,7 @@ class Camera{
           const double &pix_size_, const Colour &bg_);
 
     // Methods
-    void render(const Sphere &obj_) const;
+    void render(const Triangle &obj_) const;
     void save_image(const std::string &filename);
 };
 
