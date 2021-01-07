@@ -37,7 +37,7 @@ Camera::Camera(const Vector3 &pos_dir_camera_, const double &dist_, \
     : dir(pos_dir_camera_), dist_screen(dist_), screen(pix_size_, w_, h_, dir), img(w_, h_, bg_) {}
 
 void Camera::render(const Triangle &obj_, const Sphere &sph_) const {
-  Triplet center_screen = dir(dist_screen);
+  Triplet center_screen = dir(dist_screen/dir.norm());
   Triplet S = dir.start;
   Triplet E;
   Vector3 ray;

@@ -20,8 +20,8 @@ struct Geometry{
 
 struct Triangle : public Geometry{
   private:
-    Triplet A, B, C;
-    Vector3 AB, AC;
+    const Triplet A, B, C;
+    const Vector3 AB, AC;
 
   public:
     // Constructors
@@ -35,8 +35,8 @@ struct Triangle : public Geometry{
 
 struct Sphere : public Geometry{
   private:
-    Triplet center;
-    double radius;
+    const Triplet center;
+    const double radius;
 
   public:
     // Constructors
