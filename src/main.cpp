@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 
+#include "Define.h"
 #include "Vector3.h"
 #include "Triplet.h"
 #include "Colour.h"

@@ -24,8 +24,17 @@ Example of a rendered triangle using ray-tracing
 
 # TODO
 - [ ] Properly treat several objects and go through them for rendering
-- [ ] input to main -> filename
 - [ ] Collision between rays and general objects.
 - [ ] Use R-tree?
 - [ ] Read Blender OBJ files
+- [ ] Parsing inputs: https://www.cplusplus.com/articles/DEN36Up4/
 
+# How it works
+
+* Start by placing objects in a 3d world.
+* Consider looking at the world through a camera (~ 1 point at the center
+  looking through a screen that has width x height pixels.)
+* For each pixel, looking from the center towards that pixel and see if it
+  encounters an object.
+* If it encounters an object calculate the color, else give the "default
+  background color" to that pixel.

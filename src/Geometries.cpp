@@ -28,7 +28,7 @@ Triplet Triangle::normal() const {
 }
 
 bool Triangle::intersect(const Vector3 &ray, double &t) const {
-  Triplet N = this->normal();
+  Triplet N = this->AB.cross(this->AC);
   double D = ray.dot(N);
 
   if (D > -EPS && D < EPS)
