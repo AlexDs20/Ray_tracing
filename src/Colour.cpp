@@ -4,6 +4,11 @@
 #include "math.h"
 #include "Colour.h"
 
+Colour::Colour(const short &R, const short &G, const short &B) : \
+  r_(std::max(std::min((int)R, 255), 0)), \
+  g_(std::max(std::min((int)G, 255), 0)), \
+  b_(std::max(std::min((int)B, 255), 0)) { }
+
 Colour::Colour(std::string hex) {
   r_ = std::stoi(hex.substr(1, 2), 0, 16);
   g_ = std::stoi(hex.substr(3, 2), 0, 16);
@@ -16,9 +21,9 @@ Colour::Colour(const char* hex){
   char R[] = {hex[1], hex[2], '\0'};
   char G[] = {hex[3], hex[4], '\0'};
   char B[] = {hex[5], hex[6], '\0'};
-  r_ = (int16_t)strtol(R, NULL, 16);
-  g_ = (int16_t)strtol(G, NULL, 16);
-  b_ = (int16_t)strtol(B, NULL, 16);
+  r_ = (uint16_t)strtol(R, NULL, 16);
+  g_ = (uint16_t)strtol(G, NULL, 16);
+  b_ = (uint16_t)strtol(B, NULL, 16);
 }
 
 std::string Colour::to_hex() const{
@@ -38,30 +43,30 @@ void Colour::print_hex() const{
 }
 
 Colour Colour::operator+(const Colour &lhs) const{
-  int16_t r = std::min(r_+lhs.r(), 255);
-  int16_t g = std::min(g_+lhs.g(), 255);
-  int16_t b = std::min(b_+lhs.b(), 255);
+  uint16_t r = std::min(r_+lhs.r(), 255);
+  uint16_t g = std::min(g_+lhs.g(), 255);
+  uint16_t b = std::min(b_+lhs.b(), 255);
   return Colour(r, g, b);
 }
 
 Colour Colour::operator-(const Colour &lhs) const{
-  int16_t r = std::max(r_-lhs.r(), 0);
-  int16_t g = std::max(g_-lhs.g(), 0);
-  int16_t b = std::max(b_-lhs.b(), 0);
+  uint16_t r = std::max(r_-lhs.r(), 0);
+  uint16_t g = std::max(g_-lhs.g(), 0);
+  uint16_t b = std::max(b_-lhs.b(), 0);
   return Colour(r, g, b);
 }
 
 Colour Colour::operator* (const double &scale) const{
-  int16_t r = std::max(std::min((int)(r_*scale), 255), 0);
-  int16_t g = std::max(std::min((int)(g_*scale), 255), 0);
-  int16_t b = std::max(std::min((int)(b_*scale), 255), 0);
+  uint16_t r = std::max(std::min((int)(r_*scale), 255), 0);
+  uint16_t g = std::max(std::min((int)(g_*scale), 255), 0);
+  uint16_t b = std::max(std::min((int)(b_*scale), 255), 0);
   return Colour(r, g, b);
 }
 
 Colour Colour::operator/ (const double &scale) const{
-  int16_t r = std::max(std::min((int)(r_/scale), 255), 0);
-  int16_t g = std::max(std::min((int)(g_/scale), 255), 0);
-  int16_t b = std::max(std::min((int)(b_/scale), 255), 0);
+  uint16_t r = std::max(std::min((int)(r_/scale), 255), 0);
+  uint16_t g = std::max(std::min((int)(g_/scale), 255), 0);
+  uint16_t b = std::max(std::min((int)(b_/scale), 255), 0);
   return Colour(r, g, b);
 }
 

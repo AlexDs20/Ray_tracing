@@ -97,19 +97,19 @@ if (0){
 
 if (1){
   // Create the camera
-  Triplet cam_pos(2,0,2);
+  Triplet cam_pos(0,4,4);
   Triplet cam_look(0,0,0);
   Vector3 cam_vec(cam_pos, cam_look);
-  Camera camera(cam_vec, 0.1, 1024, 768, 0.001, Colour(0,0,0));
+  Camera camera(cam_vec, 1, 1024, 768, 0.01, Colour(255,255,0));
 
   // Create the scene
-  Triplet A(-1,0,1);
-  Triplet B(1,0,0);
-  Triplet C(0,1,0);
+  Triplet A(0,0,0);
+  Triplet B(3,0,0);
+  Triplet C(0,3,0);
   Triangle tri(A,B,C,Colour(255,255,255));
 
-  Triplet c(1.4,0,0);
-  Sphere sph(c, 0.2, Colour(0,255,0));
+  Triplet c(0,0,0);
+  Sphere sph(c, 3, Colour(0,255,0));
 
   camera.render(tri, sph);
   const std::string filename = "Image.ppm";

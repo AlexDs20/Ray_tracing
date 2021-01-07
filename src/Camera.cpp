@@ -31,10 +31,10 @@ const Triplet Screen::pixel_pos(const unsigned int &i, const unsigned int &j) co
 // Camera Class
 Camera::Camera() : dir(Vector3(1,0,0)), dist_screen(1), screen(0.1, 1024, 768, Triplet(1,0,0)), img(1024,768,Colour()) {}
 
-Camera::Camera(const Vector3 &pos_dir_camera_, const double &dist_, \
+Camera::Camera(const Vector3 &pos_, const double &dist_, \
               const unsigned int &w_, const unsigned int &h_ , \
               const double &pix_size_, const Colour &bg_)\
-    : dir(pos_dir_camera_), dist_screen(dist_), screen(pix_size_, w_, h_, dir), img(w_, h_, bg_) {}
+    : dir(pos_), dist_screen(dist_), screen(pix_size_, w_, h_, dir), img(w_, h_, bg_) {}
 
 void Camera::render(const Triangle &obj_, const Sphere &sph_) const {
   Triplet center_screen = dir(dist_screen/dir.norm());
@@ -51,7 +51,7 @@ void Camera::render(const Triangle &obj_, const Sphere &sph_) const {
         if (obj_.intersect(ray, t))
           img.set(i,j,obj_.get_colour());
         else if (sph_.intersect(ray, t))
-          img.set(i,j,sph_.get_colour());
+          img.set(i,j,sph_.get_colour(ray(t)));
     }
   }
 }

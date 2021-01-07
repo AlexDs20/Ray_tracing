@@ -33,7 +33,7 @@ class Camera{
   public:
     // Constructors
     Camera();
-    Camera(const Vector3 &pos_dir_camera_, const double &dist_, \
+    Camera(const Vector3 &pos_dir_camera_, const double &dist_to_screen, \
           const unsigned int &w_, const unsigned int &h_ , \
           const double &pix_size_, const Colour &bg_);
 

@@ -46,4 +46,5 @@ struct Sphere : public Geometry{
     // Methods
     const Triplet normal(const Triplet &pos) const;
     bool intersect(const Vector3 &ray, double &t) const;
+    const Colour get_colour(const Triplet &p_) const;
 };

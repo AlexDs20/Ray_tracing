@@ -80,3 +80,9 @@ bool Sphere::intersect(const Vector3 &ray, double &t) const {
     t = t2;
   return 1;
 }
+
+const Colour Sphere::get_colour(const Triplet &p_) const {
+  Triplet N = this->normal(p_);
+
+  return 0.5*Colour((int)255*N.x(),(int)255*N.y(),(int)255*N.z());
+}
