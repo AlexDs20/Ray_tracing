@@ -64,21 +64,18 @@ const Triplet Sphere::normal(const Triplet &pos) const {
 bool Sphere::intersect(const Vector3 &ray, double &t) const {
   Vector3 CS(this->center, ray.start);
   double a = ray.norm2();
-  double b = 2.0 * CS.dot(ray);
+  double b_half = CS.dot(ray);
   double c = CS.norm2() - this->radius*this->radius;
-  double delta = b*b - 4*a*c;
+  double delta = b_half*b_half - a*c;
 
   if (delta < 0)
     return 0;
 
-  double t1 = (-b+sqrt(delta))/(2*a);
-  double t2 = (-b-sqrt(delta))/(2*a);
-
-  if ( (ray(t1)-ray.start).norm2() < (ray(t2)-ray.start).norm2() )
-    t = t1;
+  t = (-b_half-sqrt(delta))/a;
+  if (t>0)
+    return 1;
   else
-    t = t2;
-  return 1;
+    return 0;
 }
 
 const Colour Sphere::get_colour(const Triplet &p_) const {
