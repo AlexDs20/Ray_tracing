@@ -1,4 +1,5 @@
 #include "Camera.h"
+#include "Hittable_list.h"
 
 // Screen Class
 Screen::Screen() : pixel_size(1), y(Triplet(0,1,0)), z(Triplet(0,0,1)), w(1024), h(768) {}
@@ -36,7 +37,7 @@ Camera::Camera(const Vector3 &pos_, const double &dist_, \
               const double &pix_size_, const Colour &bg_)\
     : dir(pos_), dist_screen(dist_), screen(pix_size_, w_, h_, dir), img(w_, h_, bg_) {}
 
-void Camera::render(const Triangle &obj_, const Sphere &sph_, double t_min_, double t_max_) const {
+void Camera::render(const Hittable_list &scene_, double t_min_, double t_max_) const {
   Triplet center_screen = dir(dist_screen/dir.norm());
   Triplet S = dir.start;
   Triplet E;
@@ -48,10 +49,9 @@ void Camera::render(const Triangle &obj_, const Sphere &sph_, double t_min_, dou
       E = center_screen + screen.pixel_pos(i,j);
       ray = Vector3(S,E);
       hit_record rec;
-        if (obj_.intersect(ray, t_min_, t_max_, rec))
-          img.set(i,j,obj_.get_colour(rec.p));
-        else if (sph_.intersect(ray, t_min_, t_max_, rec))
-          img.set(i,j,sph_.get_colour(rec.p));
+        if (scene_.intersect(ray, t_min_, t_max_, rec))
+          img.set(i,j,Colour(125,125,125));
+//          img.set(i,j,obj_.get_colour(rec.p));
     }
   }
 }

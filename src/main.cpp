@@ -36,7 +36,7 @@ scene.add(std::make_shared<Triangle>(A,B,C,Colour(255,255,255)));
 scene.add(std::make_shared<Sphere>(sph));
 
 // Render
-camera.render(tri, sph, 0, 10);
+camera.render(scene, 0, 10);
 const std::string filename = "Image.ppm";
 camera.save_image(filename);
 

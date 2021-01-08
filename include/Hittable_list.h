@@ -16,5 +16,5 @@ class Hittable_list : public Hittable{
     void clear();
     void add(std::shared_ptr<Hittable> object_);
 
-    virtual bool intersect( const Vector3 &ray_, double t_min_, double t_max_, hit_record &rec_) const override;
+    virtual bool intersect(const Vector3 &ray_, double t_min_, double t_max_, hit_record &rec_) const override;
 };
