@@ -10,15 +10,13 @@ struct hit_record{
     Triplet p;    // position
     Triplet n;    // normal
     double t;
+    bool front;  // front face
 
   public:
     hit_record() : p(), n(), t(0) {}
-    hit_record(Triplet p_, Triplet n_, double t_) : p(p_), n(n_), t(t_) {}
-    void set(Triplet p_, Triplet n_, double t_){
-      p = p_;
-      n = n_;
-      t = t_;
-    }
+    hit_record(Triplet p_, Triplet n_, double t_);
+    void set(const Vector3 &ray_, double t_, const Triplet &normal_);
+    void set(Triplet p_, Triplet n_, double t_);
 };
 
 class Hittable{

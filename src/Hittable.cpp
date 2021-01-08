@@ -3,6 +3,22 @@
 #include <math.h>
 #include "Hittable.h"
 
+// Hit_record struct
+hit_record::hit_record(Triplet p_, Triplet n_, double t_) : p(p_), n(n_), t(t_) {}
+
+void hit_record::set(const Vector3 &ray_, double t_, const Triplet &normal_){
+  n = normal_;
+  t = t_;
+  p = ray_(t);
+  front = ray_.dot(n) < 0;
+}
+
+void hit_record::set(Triplet p_, Triplet n_, double t_){
+  p = p_;
+  n = n_;
+  t = t_;
+}
+
 // Hittable class
 Hittable::Hittable() : colour(Colour(0,0,255)) {}
 
@@ -49,7 +65,7 @@ bool Triangle::intersect(const Vector3 &ray_, double t_min_, double t_max_, hit_
   if (t<t_min_ || t>t_max_)
     return 0;
 
-  rec_.set(ray_(t), this->normal(), t);
+  rec_.set(ray_, t, this->normal());
   return 1;
 }
 
@@ -90,7 +106,7 @@ bool Sphere::intersect(const Vector3 &ray_, double t_min_, double t_max_, hit_re
       return 0;
   }
 
-  rec_.set(ray_(t), this->normal(ray_(t)), t);
+  rec_.set(ray_, t, this->normal(ray_(t)));
   return 1;
 }
 
