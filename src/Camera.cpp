@@ -36,22 +36,22 @@ Camera::Camera(const Vector3 &pos_, const double &dist_, \
               const double &pix_size_, const Colour &bg_)\
     : dir(pos_), dist_screen(dist_), screen(pix_size_, w_, h_, dir), img(w_, h_, bg_) {}
 
-void Camera::render(const Triangle &obj_, const Sphere &sph_) const {
+void Camera::render(const Triangle &obj_, const Sphere &sph_, double t_min_, double t_max_) const {
   Triplet center_screen = dir(dist_screen/dir.norm());
   Triplet S = dir.start;
   Triplet E;
   Vector3 ray;
-  double t=0;
 
   for (unsigned int i=0; i<screen.w; i++){
     std::cerr << "\rProgress: " << (int)100*i/screen.w << "% " << std::flush;
     for (unsigned int j=0; j<screen.h; j++){
       E = center_screen + screen.pixel_pos(i,j);
       ray = Vector3(S,E);
-        if (obj_.intersect(ray, t))
-          img.set(i,j,obj_.get_colour());
-        else if (sph_.intersect(ray, t))
-          img.set(i,j,sph_.get_colour(ray(t)));
+      hit_record rec;
+        if (obj_.intersect(ray, t_min_, t_max_, rec))
+          img.set(i,j,obj_.get_colour(rec.p));
+        else if (sph_.intersect(ray, t_min_, t_max_, rec))
+          img.set(i,j,sph_.get_colour(rec.p));
     }
   }
 }

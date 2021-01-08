@@ -4,7 +4,7 @@
 #include "Vector3.h"
 #include "Triplet.h"
 #include "Image.h"
-#include "Geometries.h"
+#include "Hittable.h"
 
 class Screen{
   private:
@@ -38,7 +38,8 @@ class Camera{
           const double &pix_size_, const Colour &bg_);
 
     // Methods
-    void render(const Triangle &obj_, const Sphere &sph_) const;
+    // t_min_ and t_max_ are the distances from the position of the camera
+    void render(const Triangle &obj_, const Sphere &sph_, double t_min_, double t_max_) const;
     void save_image(const std::string &filename);
 };
 
