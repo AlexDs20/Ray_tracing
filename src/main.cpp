@@ -40,8 +40,9 @@ scene.add(std::make_shared<Triangle>(A,B,C,Colour(255,255,255)));
 scene.add(std::make_shared<Sphere>(sph));
 
 // Render
-const int max_depth=50;
-camera.render(scene, max_depth);
+const unsigned int max_depth=50;
+const unsigned int ray_per_pixel= 10;
+camera.render(scene, ray_per_pixel, max_depth);
 
 // Save Image
 const std::string filename = "Image.ppm";
