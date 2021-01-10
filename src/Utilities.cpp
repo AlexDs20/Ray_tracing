@@ -34,6 +34,9 @@ Triplet random_vector_unit_half_sphere(Triplet normal_){
 }
 
 Colour calculate_colour(const Vector3 &ray_, const Hittable &scene_, int depth_){
+  if (depth_<=0)
+    return Colour(0,0,0);
+
   hit_record rec;
   if (scene_.intersect(ray_, EPS, infty, rec)){
     Triplet random_unit = random_vector_unit_half_sphere(rec.n);
