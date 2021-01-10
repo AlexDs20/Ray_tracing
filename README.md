@@ -1,7 +1,7 @@
 # Ray tracing
 In dev. Obviously.
 
-Example of a rendered triangle using ray-tracing
+Example of a rendered sphere and triangle using ray-tracing
 ![](rendered/Triangle.png)
 
 # References

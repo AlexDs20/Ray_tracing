@@ -2,8 +2,6 @@
 #include "Triplet.h"
 #include "Vector3.h"
 #include "Colour.h"
-#include "Hittable.h"
-
 
 struct hit_record{
   public:
