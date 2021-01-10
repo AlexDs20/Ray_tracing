@@ -12,16 +12,15 @@
 Triplet random_vector_unit_half_sphere(Triplet normal_){
   // Creates a vector perpendicular to the normal
   // i.e. V.dot(N) = 0
-  normal_ = Triplet((double)rand()/RAND_MAX, (double)rand()/RAND_MAX, \
-                    (double)rand()/RAND_MAX);
+  normal_ = Triplet(my_rand(), my_rand(), my_rand());
   normal_ = normal_.unit();
   double vz = -(normal_.x() + normal_.y())/normal_.z();
   Triplet k(1, 1, vz);
   k = k.unit();
 
   // Generate the rotation angles
-  double phi = (double)2*PI*rand()/RAND_MAX;
-  double theta = (double)0.5*rand()/RAND_MAX;
+  double phi = 2*PI*my_rand();
+  double theta = acos(1 - my_rand());
 
   // Start with the theta rotation around k
   // using Rodrigues formula: https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
@@ -49,5 +48,9 @@ Colour calculate_colour(const Vector3 &ray_, const Hittable &scene_, int depth_)
 
 void gamma_correction(Colour &colour_, double gamma_){
   colour_.power(1./gamma_);
+}
+
+double my_rand(){
+  return (double)rand()/RAND_MAX;
 }
 

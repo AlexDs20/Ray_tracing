@@ -2,6 +2,7 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <cstdlib>
 
 #include "Define.h"
 #include "Vector3.h"
@@ -11,11 +12,13 @@
 #include "Hittable.h"
 #include "Hittable_list.h"
 #include "Camera.h"
+#include "Utilities.h"
 
 int main(){
 
+// Set the random seed
+srand( (unsigned)time(NULL) );
 
-if (1){
 // Create the camera
 Triplet cam_pos(-1.5,0,1.5);
 Triplet cam_look(0,0,0);
@@ -43,7 +46,6 @@ camera.render(scene, max_depth);
 // Save Image
 const std::string filename = "Image.ppm";
 camera.save_image(filename);
-}
 
 return 0;
 }

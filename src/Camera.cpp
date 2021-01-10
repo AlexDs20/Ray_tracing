@@ -48,7 +48,6 @@ void Camera::render(const Hittable_list &scene_, const int &max_depth_) const {
   Vector3 ray;
   Colour colour;
   double gamma = 2;
-  srand( (unsigned)time(NULL) );
 
   for (unsigned int i=1; i<screen.w; i++){
     std::cerr << "\rProgress: " << (int)100*i/screen.w << "% " << std::flush;
