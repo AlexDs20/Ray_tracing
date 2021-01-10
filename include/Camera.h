@@ -40,7 +40,7 @@ class Camera{
 
     // Methods
     // t_min_ and t_max_ are the distances from the position of the camera
-    void render(const Hittable_list &scene_, double t_min_, double t_max_) const;
+    void render(const Hittable_list &scene_, const int &max_depth_) const;
     void save_image(const std::string &filename);
 };
 

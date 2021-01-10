@@ -1,5 +1,9 @@
+#include <ctime>
+#include <cstdlib>
 #include "Camera.h"
 #include "Hittable_list.h"
+#include "Utilities.h"
+#include "Triplet.h"
 
 // Screen Class
 Screen::Screen() : pixel_size(1), y(Triplet(0,1,0)), z(Triplet(0,0,1)), w(1024), h(768) {}
@@ -37,21 +41,22 @@ Camera::Camera(const Vector3 &pos_, const double &dist_, \
               const double &pix_size_, const Colour &bg_)\
     : dir(pos_), dist_screen(dist_), screen(pix_size_, w_, h_, dir), img(w_, h_, bg_) {}
 
-void Camera::render(const Hittable_list &scene_, double t_min_, double t_max_) const {
+void Camera::render(const Hittable_list &scene_, const int &max_depth_) const {
   Triplet center_screen = dir(dist_screen/dir.norm());
   Triplet S = dir.start;
   Triplet E;
   Vector3 ray;
+  Colour colour;
+  srand( (unsigned)time(NULL) );
 
-  for (unsigned int i=0; i<screen.w; i++){
+  for (unsigned int i=1; i<screen.w; i++){
     std::cerr << "\rProgress: " << (int)100*i/screen.w << "% " << std::flush;
-    for (unsigned int j=0; j<screen.h; j++){
+    for (unsigned int j=1; j<screen.h; j++){
       E = center_screen + screen.pixel_pos(i,j);
       ray = Vector3(S,E);
       hit_record rec;
-        if (scene_.intersect(ray, t_min_, t_max_, rec))
-          img.set(i,j,Colour(125,125,125));
-//          img.set(i,j,obj_.get_colour(rec.p));
+      colour = calculate_colour(ray, scene_, max_depth_);
+      img.set(i,j,colour);
     }
   }
 }
