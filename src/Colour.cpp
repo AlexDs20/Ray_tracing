@@ -42,6 +42,12 @@ void Colour::print_hex() const{
   std::cout << this->to_hex() << std::endl;
 }
 
+void Colour::power(double exp_){
+  this->r_ = std::min(std::max((int) (pow((double)this->r_/255, exp_)*255), 0), 255);
+  this->g_ = std::min(std::max((int) (pow((double)this->g_/255, exp_)*255), 0), 255);
+  this->b_ = std::min(std::max((int) (pow((double)this->b_/255, exp_)*255), 0), 255);
+}
+
 Colour Colour::operator+(const Colour &lhs) const{
   uint16_t r = std::min(r_+lhs.r(), 255);
   uint16_t g = std::min(g_+lhs.g(), 255);

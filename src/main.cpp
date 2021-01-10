@@ -24,8 +24,8 @@ Camera camera(cam_vec, 1., 1024, 768, 0.005, Colour(255,255,0));
 
 // Create the objects
 Triplet A(-3,  0, -1);
-Triplet B(2.5,-50,-1);
-Triplet C(2.5, 50,-1);
+Triplet B(2.0,-50,-1);
+Triplet C(2.0, 50,-1);
 Triangle tri(A,B,C,Colour(255,255,255));
 
 Triplet c(0,0,0);

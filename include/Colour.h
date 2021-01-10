@@ -24,6 +24,7 @@ struct Colour{
 
     void print_rgb() const;
     void print_hex() const;
+    void power(double exponent);
 
     // Operators
     Colour operator+ (const Colour&) const;

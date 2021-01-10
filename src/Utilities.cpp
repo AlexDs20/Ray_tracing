@@ -46,3 +46,8 @@ Colour calculate_colour(const Vector3 &ray_, const Hittable &scene_, int depth_)
   double x = 0.5*(ray_.unit().y() + 1.0);
   return (1-x)*Colour(255,255,255) + x * Colour(128, 200, 255);
 }
+
+void gamma_correction(Colour &colour_, double gamma_){
+  colour_.power(1./gamma_);
+}
+

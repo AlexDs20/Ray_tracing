@@ -47,6 +47,7 @@ void Camera::render(const Hittable_list &scene_, const int &max_depth_) const {
   Triplet E;
   Vector3 ray;
   Colour colour;
+  double gamma = 2;
   srand( (unsigned)time(NULL) );
 
   for (unsigned int i=1; i<screen.w; i++){
@@ -56,6 +57,7 @@ void Camera::render(const Hittable_list &scene_, const int &max_depth_) const {
       ray = Vector3(S,E);
       hit_record rec;
       colour = calculate_colour(ray, scene_, max_depth_);
+      gamma_correction(colour, gamma);
       img.set(i,j,colour);
     }
   }
