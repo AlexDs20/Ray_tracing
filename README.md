@@ -1,8 +1,8 @@
 # Ray tracing
 In dev. Obviously.
 
-Example of a rendered triangle using ray-tracing
-![](rendered/Triangle.png)
+Example of a rendered sphere and triangle using ray-tracing
+![](rendered/Image.png)
 
 # References
 * General idea: https://www.youtube.com/watch?v=gBPNO6ruevk

@@ -1,6 +1,6 @@
-#include "Define.h"
-
 #include <math.h>
+
+#include "Define.h"
 #include "Hittable.h"
 
 // Hit_record struct
