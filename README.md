@@ -10,23 +10,16 @@ Example of a rendered sphere and triangle using ray-tracing
 * All there is: http://www.realtimerendering.com/raytracing.html
 * Intersection between a line and a triangle: doi:10.1080/10867651.1997.10487468
     (and the wiki: https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm )
-
-# Done
-- [x] Triplet Class
-- [x] Colour Class
-- [x] Vector3 Class
-- [x] Image class. To have an array representing each pixel
-- [x] Intersection between a ray and a triangle
-- [x] Collision between ray and sphere.
-- [x] Make the camera class
-- [x] Make a geometry class (which has a color, and I guess later, texture,
-  roughness, ...) and Triangle a daughter of it.
+* Lambertian reflectance: https://en.wikipedia.org/wiki/Lambertian_reflectance
+* Gamma Correction: https://en.wikipedia.org/wiki/Gamma_correction
+* Specular highlight: https://en.wikipedia.org/wiki/Specular_highlight
 
 # TODO
-- [ ] Properly treat several objects and go through them for rendering
-- [ ] Collision between rays and general objects.
+- [ ] Transparency
+- [ ] Multi-threading
 - [ ] Use R-tree?
 - [ ] Read Blender OBJ files
+- [ ] Collision between rays and general objects.
 - [ ] Parsing inputs: https://www.cplusplus.com/articles/DEN36Up4/
 
 # How it works
@@ -38,3 +31,8 @@ Example of a rendered sphere and triangle using ray-tracing
   encounters an object.
 * If it encounters an object calculate the color, else give the "default
   background color" to that pixel.
+
+## How the colour is calculated
+
+# Requirements
+* C++ 11

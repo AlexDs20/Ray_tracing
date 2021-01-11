@@ -29,11 +29,13 @@ struct Colour{
     // Operators
     Colour operator+ (const Colour&) const;
     Colour operator- (const Colour&) const;
+    Colour operator* (const Colour&) const;
     Colour operator* (const double&) const;
     Colour operator/ (const double&) const;
 
     Colour operator+= (const Colour&);
     Colour operator-= (const Colour&);
+    Colour operator*= (const Colour&);
     Colour operator*= (const double&);
     Colour operator/= (const double&);
     bool operator!= (const Colour&) const;

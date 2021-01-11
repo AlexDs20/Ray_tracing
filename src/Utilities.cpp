@@ -38,9 +38,11 @@ Colour calculate_colour(const Vector3 &ray_, const Hittable &scene_, int depth_)
 
   hit_record rec;
   if (scene_.intersect(ray_, EPS, infty, rec)){
-    Triplet random_unit = random_vector_unit_half_sphere(rec.n);
-    Vector3 reflected_ray(rec.p, rec.p+random_unit);
-    return 0.5*calculate_colour(reflected_ray, scene_, depth_-1);
+    Vector3 scattered;
+    Colour attenuation;
+    if (rec.mat_ptr->scatter(ray_, rec, attenuation, scattered))
+      return attenuation*calculate_colour(scattered, scene_, depth_-1);
+    return Colour(0,0,0);
   }
   double x = 0.5*(ray_.unit().y() + 1.0);
   return (1-x)*Colour(255,255,255) + x * Colour(128, 200, 255);
@@ -54,3 +56,10 @@ double my_rand(){
   return (double)rand()/RAND_MAX;
 }
 
+double dot(const Vector3 &v1, const Triplet &v2){
+  return v1.t[0]*v2.x()+v1.t[1]*v2.y()+v1.t[2]*v2.z();
+}
+
+Vector3 reflect(const Vector3 &ray_, const Triplet &n_){
+  return ray_ - 2*dot(ray_,n_) * n_;
+}

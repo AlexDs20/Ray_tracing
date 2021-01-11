@@ -1,43 +1,27 @@
 #include <math.h>
 
+#include <memory>
 #include "Define.h"
 #include "Hittable.h"
+#include "Material.h"
 
 // Hit_record struct
 hit_record::hit_record(Triplet p_, Triplet n_, double t_) : p(p_), n(n_), t(t_) {}
 
-void hit_record::set(const Vector3 &ray_, double t_, const Triplet &normal_){
+void hit_record::set(const Vector3 &ray_, double t_, const Triplet &normal_, std::shared_ptr<Material> m_){
   n = normal_;
   t = t_;
   p = ray_(t);
   front = ray_.dot(n) < 0;
-}
-
-void hit_record::set(Triplet p_, Triplet n_, double t_){
-  p = p_;
-  n = n_;
-  t = t_;
-}
-
-// Hittable class
-Hittable::Hittable() : colour(Colour(0,0,255)) {}
-
-Hittable::Hittable(const Colour &colour_) : colour(colour_) {}
-
-void Hittable::set_colour(const Colour &c_){
-  colour = c_;
-}
-
-const Colour Hittable::get_colour() const{
-  return colour;
+  mat_ptr = m_;
 }
 
 
 // Triangle class
 
-Triangle::Triangle() : Hittable(), A(), B(), C() {}
-Triangle::Triangle(const Triplet &A_, const Triplet &B_, const Triplet &C_, const Colour &colour_) \
-          : Hittable(colour_), A(A_), B(B_), C(C_), AB(A_,B_), AC(A_,C_) {}
+Triangle::Triangle() : A(), B(), C() {}
+Triangle::Triangle(const Triplet &A_, const Triplet &B_, const Triplet &C_, std::shared_ptr<Material> m_) \
+          : A(A_), B(B_), C(C_), AB(A_,B_), AC(A_,C_), mat_ptr(m_) {}
 
 Triplet Triangle::normal() const {
   return AB.cross(AC).unit();
@@ -65,7 +49,7 @@ bool Triangle::intersect(const Vector3 &ray_, double t_min_, double t_max_, hit_
   if (t<t_min_ || t>t_max_)
     return 0;
 
-  rec_.set(ray_, t, this->normal());
+  rec_.set(ray_, t, this->normal(), this->mat_ptr);
   return 1;
 }
 
@@ -76,9 +60,9 @@ const Colour Triangle::get_colour(const Triplet &p_) const {
 }
 
 // Sphere class
-Sphere::Sphere() : Hittable(), center(), radius(1) {}
-Sphere::Sphere(const Triplet &center_, const double &radius_, const Colour &colour_) \
-          : Hittable(colour_), center(center_), radius(radius_) {}
+Sphere::Sphere() : center(), radius(1) {}
+Sphere::Sphere(const Triplet &center_, const double &radius_, std::shared_ptr<Material> m_) \
+          : center(center_), radius(radius_), mat_ptr(m_) {}
 
 const Triplet Sphere::normal(const Triplet &pos) const {
   // check if p is on surface
@@ -106,7 +90,7 @@ bool Sphere::intersect(const Vector3 &ray_, double t_min_, double t_max_, hit_re
       return 0;
   }
 
-  rec_.set(ray_, t, this->normal(ray_(t)));
+  rec_.set(ray_, t, this->normal(ray_(t)), this->mat_ptr);
   return 1;
 }
 

@@ -69,6 +69,13 @@ Colour Colour::operator* (const double &scale) const{
   return Colour(r, g, b);
 }
 
+Colour Colour::operator* (const Colour &c2) const{
+  uint16_t r = std::max(std::min((int)(r_*c2.r_/255), 255), 0);
+  uint16_t g = std::max(std::min((int)(g_*c2.g_/255), 255), 0);
+  uint16_t b = std::max(std::min((int)(b_*c2.b_/255), 255), 0);
+  return Colour(r, g, b);
+}
+
 Colour Colour::operator/ (const double &scale) const{
   uint16_t r = std::max(std::min((int)(r_/scale), 255), 0);
   uint16_t g = std::max(std::min((int)(g_/scale), 255), 0);
@@ -100,6 +107,16 @@ Colour Colour::operator*= (const double &val){
   r_ *= val;
   g_ *= val;
   b_ *= val;
+  r_ = std::max(std::min((int)r_, 255), 0);
+  g_ = std::max(std::min((int)g_, 255), 0);
+  b_ = std::max(std::min((int)b_, 255), 0);
+  return *this;
+}
+
+Colour Colour::operator*= (const Colour &c2){
+  r_ *= c2.r_/255;
+  g_ *= c2.g_/255;
+  b_ *= c2.b_/255;
   r_ = std::max(std::min((int)r_, 255), 0);
   g_ = std::max(std::min((int)g_, 255), 0);
   b_ = std::max(std::min((int)b_, 255), 0);
