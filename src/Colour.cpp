@@ -4,15 +4,15 @@
 #include "math.h"
 #include "Colour.h"
 
-Colour::Colour(const short &R, const short &G, const short &B) : \
-  r_(std::max(std::min((int)R, 255), 0)), \
-  g_(std::max(std::min((int)G, 255), 0)), \
-  b_(std::max(std::min((int)B, 255), 0)) { }
+Colour::Colour(const double &R, const double &G, const double &B) : \
+  r_(std::max(std::min(R, 1.), 0.)), \
+  g_(std::max(std::min(G, 1.), 0.)), \
+  b_(std::max(std::min(B, 1.), 0.)) { }
 
 Colour::Colour(std::string hex) {
-  r_ = std::stoi(hex.substr(1, 2), 0, 16);
-  g_ = std::stoi(hex.substr(3, 2), 0, 16);
-  b_ = std::stoi(hex.substr(5, 2), 0, 16);
+  r_ = std::stoi(hex.substr(1, 2), 0, 16)/255;
+  g_ = std::stoi(hex.substr(3, 2), 0, 16)/255;
+  b_ = std::stoi(hex.substr(5, 2), 0, 16)/255;
 }
 
 Colour::Colour(const char* hex){
@@ -21,15 +21,15 @@ Colour::Colour(const char* hex){
   char R[] = {hex[1], hex[2], '\0'};
   char G[] = {hex[3], hex[4], '\0'};
   char B[] = {hex[5], hex[6], '\0'};
-  r_ = (uint16_t)strtol(R, NULL, 16);
-  g_ = (uint16_t)strtol(G, NULL, 16);
-  b_ = (uint16_t)strtol(B, NULL, 16);
+  r_ = (double)strtol(R, NULL, 16)/255;
+  g_ = (double)strtol(G, NULL, 16)/255;
+  b_ = (double)strtol(B, NULL, 16)/255;
 }
 
 std::string Colour::to_hex() const{
   std::string hex;
   std::stringstream ss(hex);
-  ss << "#" << std::hex << (r_ << 16 | g_ << 8 | b_);
+  ss << "#" << std::hex << ((int)(r_*255) << 16 | (int)(g_*255) << 8 | (int)(b_*255));
   hex = ss.str();
   return hex;
 }
@@ -43,43 +43,43 @@ void Colour::print_hex() const{
 }
 
 void Colour::power(double exp_){
-  this->r_ = std::min(std::max((int) (pow((double)this->r_/255, exp_)*255), 0), 255);
-  this->g_ = std::min(std::max((int) (pow((double)this->g_/255, exp_)*255), 0), 255);
-  this->b_ = std::min(std::max((int) (pow((double)this->b_/255, exp_)*255), 0), 255);
+  r_ = std::min(std::max( pow(r_, exp_), 0.), 1.);
+  g_ = std::min(std::max( pow(g_, exp_), 0.), 1.);
+  b_ = std::min(std::max( pow(b_, exp_), 0.), 1.);
 }
 
 Colour Colour::operator+(const Colour &lhs) const{
-  uint16_t r = std::min(r_+lhs.r(), 255);
-  uint16_t g = std::min(g_+lhs.g(), 255);
-  uint16_t b = std::min(b_+lhs.b(), 255);
+  double r = std::min(r_+lhs.r(), 1.);
+  double g = std::min(g_+lhs.g(), 1.);
+  double b = std::min(b_+lhs.b(), 1.);
   return Colour(r, g, b);
 }
 
 Colour Colour::operator-(const Colour &lhs) const{
-  uint16_t r = std::max(r_-lhs.r(), 0);
-  uint16_t g = std::max(g_-lhs.g(), 0);
-  uint16_t b = std::max(b_-lhs.b(), 0);
+  double r = std::max(r_-lhs.r(), 0.);
+  double g = std::max(g_-lhs.g(), 0.);
+  double b = std::max(b_-lhs.b(), 0.);
   return Colour(r, g, b);
 }
 
 Colour Colour::operator* (const double &scale) const{
-  uint16_t r = std::max(std::min((int)(r_*scale), 255), 0);
-  uint16_t g = std::max(std::min((int)(g_*scale), 255), 0);
-  uint16_t b = std::max(std::min((int)(b_*scale), 255), 0);
+  double r = std::max(std::min(r_*scale, 1.), 0.);
+  double g = std::max(std::min(g_*scale, 1.), 0.);
+  double b = std::max(std::min(b_*scale, 1.), 0.);
   return Colour(r, g, b);
 }
 
 Colour Colour::operator* (const Colour &c2) const{
-  uint16_t r = std::max(std::min((int)(r_*c2.r_/255), 255), 0);
-  uint16_t g = std::max(std::min((int)(g_*c2.g_/255), 255), 0);
-  uint16_t b = std::max(std::min((int)(b_*c2.b_/255), 255), 0);
+  double r = std::max(std::min(r_*c2.r_, 1.), 0.);
+  double g = std::max(std::min(g_*c2.g_, 1.), 0.);
+  double b = std::max(std::min(b_*c2.b_, 1.), 0.);
   return Colour(r, g, b);
 }
 
 Colour Colour::operator/ (const double &scale) const{
-  uint16_t r = std::max(std::min((int)(r_/scale), 255), 0);
-  uint16_t g = std::max(std::min((int)(g_/scale), 255), 0);
-  uint16_t b = std::max(std::min((int)(b_/scale), 255), 0);
+  double r = std::max(std::min(r_/scale, 1.), 0.);
+  double g = std::max(std::min(g_/scale, 1.), 0.);
+  double b = std::max(std::min(b_/scale, 1.), 0.);
   return Colour(r, g, b);
 }
 
@@ -87,9 +87,9 @@ Colour Colour::operator+= (const Colour &c2){
   r_ += c2.r();
   g_ += c2.g();
   b_ += c2.b();
-  r_ = std::min((int)r_, 255);
-  g_ = std::min((int)g_, 255);
-  b_ = std::min((int)b_, 255);
+  r_ = std::min(r_, 1.);
+  g_ = std::min(g_, 1.);
+  b_ = std::min(b_, 1.);
   return *this;
 }
 
@@ -97,9 +97,9 @@ Colour Colour::operator-= (const Colour &c2){
   r_ -= c2.r();
   g_ -= c2.g();
   b_ -= c2.b();
-  r_ = std::max((int)r_, 0);
-  g_ = std::max((int)g_, 0);
-  b_ = std::max((int)b_, 0);
+  r_ = std::max(r_, 0.);
+  g_ = std::max(g_, 0.);
+  b_ = std::max(b_, 0.);
   return *this;
 }
 
@@ -107,19 +107,19 @@ Colour Colour::operator*= (const double &val){
   r_ *= val;
   g_ *= val;
   b_ *= val;
-  r_ = std::max(std::min((int)r_, 255), 0);
-  g_ = std::max(std::min((int)g_, 255), 0);
-  b_ = std::max(std::min((int)b_, 255), 0);
+  r_ = std::max(std::min(r_, 1.), 0.);
+  g_ = std::max(std::min(g_, 1.), 0.);
+  b_ = std::max(std::min(b_, 1.), 0.);
   return *this;
 }
 
 Colour Colour::operator*= (const Colour &c2){
-  r_ *= c2.r_/255;
-  g_ *= c2.g_/255;
-  b_ *= c2.b_/255;
-  r_ = std::max(std::min((int)r_, 255), 0);
-  g_ = std::max(std::min((int)g_, 255), 0);
-  b_ = std::max(std::min((int)b_, 255), 0);
+  r_ *= c2.r_;
+  g_ *= c2.g_;
+  b_ *= c2.b_;
+  r_ = std::max(std::min(r_, 1.), 0.);
+  g_ = std::max(std::min(g_, 1.), 0.);
+  b_ = std::max(std::min(b_, 1.), 0.);
   return *this;
 }
 
@@ -127,9 +127,9 @@ Colour Colour::operator/= (const double &val){
   r_ /= val;
   g_ /= val;
   b_ /= val;
-  r_ = std::max(std::min((int)r_, 255), 0);
-  g_ = std::max(std::min((int)g_, 255), 0);
-  b_ = std::max(std::min((int)b_, 255), 0);
+  r_ = std::max(std::min(r_, 1.), 0.);
+  g_ = std::max(std::min(g_, 1.), 0.);
+  b_ = std::max(std::min(b_, 1.), 0.);
   return *this;
 }
 

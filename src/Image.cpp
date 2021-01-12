@@ -15,7 +15,7 @@ Image::~Image(){
 }
 
 void Image::set(const unsigned int &i, const unsigned int &j, const Colour &c) const {
-  if (i<=w && j<=h)
+  if (i<w && j<h)
     this->pixels[j*w+i] = c;
 }
 
@@ -25,7 +25,7 @@ void Image::save_PPM(const std::string &filename) const {
 //    file << "P6\n" << w << " " << h << "\n255\n";
 
   for (unsigned int i=0; i<w*h; ++i)
-      file << pixels[i].r() << ' ' << pixels[i].g() << ' ' << pixels[i].b() << ' ';
+      file << (int)(255*pixels[i].r()) << ' ' << (int)(255*pixels[i].g()) << ' ' << (int)(255* pixels[i].b()) << ' ';
 //        file << (char) pixels[i].r() << (char) pixels[i].g() << (char) pixels[i].b();
 
   file.close();

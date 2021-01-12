@@ -5,20 +5,20 @@
 
 struct Colour{
   private:
-    std::uint16_t r_, g_, b_;
+    double r_, g_, b_;
 
   public:
     Colour() : r_(0), g_(0), b_(0) { }
-    Colour(const short &R, const short &G, const short &B);
+    Colour(const double &R, const double &G, const double &B);
     Colour(std::string);
     Colour(const char*);
 
-    std::uint16_t r() const { return r_; }
-    std::uint16_t g() const { return g_; }
-    std::uint16_t b() const { return b_; }
-    std::uint16_t& r() { return r_; }
-    std::uint16_t& g() { return g_; }
-    std::uint16_t& b() { return b_; }
+    double r() const { return r_; }
+    double g() const { return g_; }
+    double b() const { return b_; }
+    double& r() { return r_; }
+    double& g() { return g_; }
+    double& b() { return b_; }
 
     std::string to_hex() const;
 

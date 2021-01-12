@@ -28,10 +28,10 @@ Vector3 cam_vec(cam_pos, cam_look);
 Camera camera(cam_vec, 1., 1024, 768, 0.005, Colour(0,0,0));
 
 // Create the materials
-auto material_ground = std::make_shared<Lambertian>(Colour(204, 204, 0));
-auto material_center = std::make_shared<Lambertian>(Colour(178, 76, 76));
-auto material_left   = std::make_shared<Metal>(Colour(204, 204, 204));
-auto material_right  = std::make_shared<Metal>(Colour(204, 153, 51));
+auto material_ground = std::make_shared<Lambertian>(Colour(0.8, 0.8, 0));
+auto material_center = std::make_shared<Lambertian>(Colour(0.7, 0.3, 0.3));
+auto material_left   = std::make_shared<Metal>(Colour(0.8, 0.8, 0.8));
+auto material_right  = std::make_shared<Metal>(Colour(0.8, 0.6, 0.2));
 
 // Create the objects
 Hittable_list scene;

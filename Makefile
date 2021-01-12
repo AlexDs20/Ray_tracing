@@ -1,6 +1,6 @@
 # Compile
-CXX       := g++ #mpic++
-CXXFLAGS  := -pedantic-errors -Wall -Wextra -Werror
+CXX       := g++
+CXXFLAGS  := -pedantic-errors -Wall -Wextra -Werror #-pthread
 LDFLAGS   := -L/usr/lib -lstdc++ -lm
 BUILD     := ./build
 OBJ_DIR   := $(BUILD)/objects
