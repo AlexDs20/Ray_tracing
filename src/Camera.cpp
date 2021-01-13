@@ -38,14 +38,15 @@ const Triplet Screen::rand_pixel_pos(const unsigned int &i, const unsigned int &
 
 
 // Camera Class
-Camera::Camera() : dir(Vector3(1,0,0)), dist_screen(1), screen(0.1, 1024, 768, Triplet(1,0,0)), img(1024,768,Colour()) {}
+Camera::Camera() : dir(Vector3(1,0,0)), dist_screen(1), screen(0.1, 1024, 768, Triplet(1,0,0)), img(1024,768) {}
 
-Camera::Camera(const Vector3 &pos_, const double &dist_, \
-              const unsigned int &w_, const unsigned int &h_ , \
-              const double &pix_size_, const Colour &bg_)\
-    : dir(pos_), dist_screen(dist_), screen(pix_size_, w_, h_, dir), img(w_, h_, bg_) {}
+Camera::Camera(const Vector3 &pos_, const double dist_, const double fov_, \
+          const unsigned int w_, const double aspect_ratio_) \
+    : dir(pos_), dist_screen(dist_), \
+      screen( dist_*tan(fov_/2)/(2*w_), w_, w_/aspect_ratio_, dir), \
+      img(w_, w_/aspect_ratio_) { }
 
-void Camera::render(const Hittable_list &scene_, const unsigned int rpp_, const unsigned int &max_depth_) const {
+void Camera::render(const Hittable_list &scene_, const unsigned int rpp_, const unsigned int &max_depth_, const int n_procs_) const {
   Triplet center_screen = dir(dist_screen/dir.norm());
   Triplet S = dir.start;
   Triplet E;
@@ -57,14 +58,13 @@ void Camera::render(const Hittable_list &scene_, const unsigned int rpp_, const 
     std::cerr << "\rProgress: " << (int)100*i/screen.w << "% " << std::flush;
     for (unsigned int j=1; j<screen.h; j++){
       colour = Colour(0,0,0);
-      for(unsigned int k=1; k<rpp_; k++){
+      for(unsigned int k=0; k<rpp_; k++){
         E = center_screen + screen.rand_pixel_pos(i,j);
         ray = Vector3(S,E);
-        hit_record rec;
         colour += calculate_colour(ray, scene_, max_depth_)/(double)rpp_;
       }
       gamma_correction(colour, gamma);
-      img.set(i,j,colour);
+      img.set(i,j,colour/n_procs_);
     }
   }
 }

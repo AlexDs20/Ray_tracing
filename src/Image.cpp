@@ -2,12 +2,11 @@
 
 Image::Image() : w(1024), h(768) {}
 
-Image::Image(const unsigned &w_, const unsigned &h_, const Colour &bg_ = Colour(0,0,0)) : w(w_), h(h_), pixels(nullptr) {
+Image::Image(const unsigned &w_, const unsigned &h_) : w(w_), h(h_), pixels(nullptr) {
   pixels = new Colour[w*h];
   for (size_t i=0; i<w*h; ++i)
-    pixels[i] = bg_;
+    pixels[i] = Colour(0,0,0);
 }
-
 
 Image::~Image(){
   if (pixels!=NULL)
@@ -16,7 +15,7 @@ Image::~Image(){
 
 void Image::set(const unsigned int &i, const unsigned int &j, const Colour &c) const {
   if (i<w && j<h)
-    this->pixels[j*w+i] = c;
+    pixels[j*w+i] += c;
 }
 
 void Image::save_PPM(const std::string &filename) const {

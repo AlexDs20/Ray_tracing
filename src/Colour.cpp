@@ -70,9 +70,9 @@ Colour Colour::operator* (const double &scale) const{
 }
 
 Colour Colour::operator* (const Colour &c2) const{
-  double r = std::max(std::min(r_*c2.r_, 1.), 0.);
-  double g = std::max(std::min(g_*c2.g_, 1.), 0.);
-  double b = std::max(std::min(b_*c2.b_, 1.), 0.);
+  double r = r_*c2.r_;
+  double g = g_*c2.g_;
+  double b = b_*c2.b_;
   return Colour(r, g, b);
 }
 
@@ -117,9 +117,6 @@ Colour Colour::operator*= (const Colour &c2){
   r_ *= c2.r_;
   g_ *= c2.g_;
   b_ *= c2.b_;
-  r_ = std::max(std::min(r_, 1.), 0.);
-  g_ = std::max(std::min(g_, 1.), 0.);
-  b_ = std::max(std::min(b_, 1.), 0.);
   return *this;
 }
 

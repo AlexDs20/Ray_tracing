@@ -35,13 +35,17 @@ class Camera{
   public:
     // Constructors
     Camera();
-    Camera(const Vector3 &pos_dir_camera_, const double &dist_to_screen, \
-          const unsigned int &w_, const unsigned int &h_ , \
-          const double &pix_size_, const Colour &bg_);
+
+    Camera(const Vector3 &pos_dir_camera_, \
+          const double dist_to_screen, \
+          const double fov_, \
+          const unsigned int w_, \
+          const double aspect_ratio_ \
+          );
 
     // Methods
     // t_min_ and t_max_ are the distances from the position of the camera
-    void render(const Hittable_list &scene_, const unsigned int ray_per_pixel_, const unsigned int &max_depth_) const;
+    void render(const Hittable_list &scene_, const unsigned int ray_per_pixel_, const unsigned int &max_depth_, const int n_procs_) const;
     void save_image(const std::string &filename);
 };
 

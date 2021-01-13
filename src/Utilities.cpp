@@ -11,11 +11,15 @@
 
 Triplet random_vector_unit_half_sphere(Triplet normal_){
   // Creates a vector perpendicular to the normal
-  // i.e. V.dot(N) = 0
-  normal_ = Triplet(my_rand(), my_rand(), my_rand());
-  normal_ = normal_.unit();
-  double vz = -(normal_.x() + normal_.y())/normal_.z();
-  Triplet k(1, 1, vz);
+  // i.e. k.dot(N) = 0
+  // k = rand
+  Triplet k(my_rand(), my_rand(), my_rand());
+  if (normal_.z() != 0)
+    k.z() = - (k.x()*normal_.x()+k.y()*normal_.y())/normal_.z();
+  else if (normal_.y() != 0)
+    k.y() = - (k.x()*normal_.x()+k.z()*normal_.z())/normal_.y();
+  else if (normal_.x() != 0)
+    k.x() = - (k.y()*normal_.y()+k.z()*normal_.z())/normal_.x();
   k = k.unit();
 
   // Generate the rotation angles
@@ -45,7 +49,7 @@ Colour calculate_colour(const Vector3 &ray_, const Hittable &scene_, int depth_)
     return Colour(0,0,0);
   }
   double x = 0.5*(ray_.unit().y() + 1.0);
-  return (1-x)*Colour(255,255,255) + x * Colour(128, 200, 255);
+  return (1-x)*Colour(1.,1.,1.) + x * Colour(0.5, 0.8, 1.);
 }
 
 void gamma_correction(Colour &colour_, double gamma_){
