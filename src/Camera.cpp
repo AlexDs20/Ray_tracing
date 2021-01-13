@@ -38,12 +38,13 @@ const Triplet Screen::rand_pixel_pos(const unsigned int &i, const unsigned int &
 
 
 // Camera Class
-Camera::Camera() : dir(Vector3(1,0,0)), dist_screen(1), screen(0.1, 1024, 768, Triplet(1,0,0)), img(1024,768,Colour()) {}
+Camera::Camera() : dir(Vector3(1,0,0)), dist_screen(1), screen(0.1, 1024, 768, Triplet(1,0,0)), img(1024,768) {}
 
-Camera::Camera(const Vector3 &pos_, const double &dist_, \
-              const unsigned int &w_, const unsigned int &h_ , \
-              const double &pix_size_, const Colour &bg_)\
-    : dir(pos_), dist_screen(dist_), screen(pix_size_, w_, h_, dir), img(w_, h_, bg_) {}
+Camera::Camera(const Vector3 &pos_, const double dist_, const double fov_, \
+          const unsigned int w_, const double aspect_ratio_) \
+    : dir(pos_), dist_screen(dist_), \
+      screen( dist_*tan(fov_/2)/(2*w_), w_, w_/aspect_ratio_, dir), \
+      img(w_, w_/aspect_ratio_) { }
 
 void Camera::render(const Hittable_list &scene_, const unsigned int rpp_, const unsigned int &max_depth_, const int n_procs_) const {
   Triplet center_screen = dir(dist_screen/dir.norm());

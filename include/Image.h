@@ -12,7 +12,7 @@ class Image{
   public:
     // Constructors
     Image();
-    Image(const unsigned &w_, const unsigned &h_, const Colour &bg_);
+    Image(const unsigned &w_, const unsigned &h_);
 
     // Destructor
     ~Image();

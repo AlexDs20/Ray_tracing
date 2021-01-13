@@ -22,11 +22,11 @@ int main(){
 srand( (unsigned)time(NULL) );
 
 // Create the camera
-Triplet cam_pos(-1.5,0,1.5);
-Triplet cam_look(0,0,0);
+Triplet cam_pos(-15.0, -1.0, 2.0);
+Triplet cam_look(0,0,0.5);
 Vector3 cam_vec(cam_pos, cam_look);
-int scale = 1;
-Camera camera(cam_vec, 1., 1024/scale, 768/scale, scale*0.01, Colour(0,0,0));
+
+Camera camera(cam_vec, 0.1, 65*PI/180, 1024, 16/10.);
 
 // Create the materials
 auto material_ground = std::make_shared<Lambertian>(Colour(0.8, 0.8, 0.0));
@@ -36,19 +36,35 @@ auto material_right  = std::make_shared<Metal>(Colour(0.8, 0.6, 0.2));
 
 // Create the objects
 Hittable_list scene;
-Triplet A(-20.0,  0.0, -0.5);
-Triplet B( 2.0, -50.0, -0.5);
-Triplet C( 2.0,  50.0, -0.5);
+Triplet A1(-20.0,  0.0, -0.5);
+Triplet A2( 2.0, -50.0, -0.5);
+Triplet A3( 2.0,  50.0, -0.5);
 
-scene.add(std::make_shared<Triangle>(A, B, C, material_ground));
-scene.add(std::make_shared<Sphere>(Triplet( 0.0,    2.0,    0.0),   1.0, material_left));
-scene.add(std::make_shared<Sphere>(Triplet( 0.0,    0.0,    0.0),   1.0, material_center));
-scene.add(std::make_shared<Sphere>(Triplet( 0.0,   -2.0,    0.0),   1.0, material_right));
+scene.add(std::make_shared<Triangle>(A1, A2, A3, material_ground));
+
+scene.add(std::make_shared<Sphere>(Triplet(0.0,   1.0,    1.0),   0.5, material_left));
+scene.add(std::make_shared<Sphere>(Triplet(0.0,   0.0,    1.0),   0.5, material_center));
+scene.add(std::make_shared<Sphere>(Triplet(0.0,  -1.0,    1.0),   0.5, material_right));
+
+// Pyramid
+  auto mirror   = std::make_shared<Metal>(Colour(0.2, 0.8, 0.4));
+  // basis
+  Triplet B1(-2.0,  0.0, -0.5);
+  Triplet B2( 0.5, -2.0, -0.5);
+  Triplet B3( 0.5,  2.0, -0.5);
+
+  // top
+  Triplet T( 0.0, 0.0, 0.5);
+
+  scene.add(std::make_shared<Triangle>(B1, B3, B2, mirror));
+  scene.add(std::make_shared<Triangle>(B1, B2, T, mirror));
+  scene.add(std::make_shared<Triangle>(B2, B3, T, mirror));
+  scene.add(std::make_shared<Triangle>(B3, B1, T, mirror));
 
 
 // Render
 const unsigned int max_depth=50;
-const unsigned int ray_per_pixel=20;
+const unsigned int ray_per_pixel=100;
 
 // Multi-threading
 int n_procs = (int)std::thread::hardware_concurrency();
@@ -67,7 +83,7 @@ else{
 
 // Save Image
 const std::string filename = "Image.ppm";
-camera.save_image(filename);
+//camera.save_image(filename);
 
 return 0;
 }
