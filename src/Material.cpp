@@ -18,6 +18,7 @@ Metal::Metal(const Colour &c_) : albedo(c_) {}
 
 bool Metal::scatter(const Vector3 &ray_, const hit_record &rec_, Colour &attenuation_, Vector3 &scattered_) const {
   scattered_ = reflect(ray_, rec_.n);
+  scattered_.start = rec_.p;
   attenuation_ = albedo;
-  return (dot(scattered_, rec_.n) > 0);
+  return (dot(scattered_,rec_.n) > 0);
 }

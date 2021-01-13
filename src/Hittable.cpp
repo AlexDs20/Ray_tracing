@@ -49,7 +49,7 @@ bool Triangle::intersect(const Vector3 &ray_, double t_min_, double t_max_, hit_
   if (t<t_min_ || t>t_max_)
     return 0;
 
-  rec_.set(ray_, t, this->normal(), this->mat_ptr);
+  rec_.set(ray_, t, normal(), mat_ptr);
   return 1;
 }
 
@@ -90,7 +90,7 @@ bool Sphere::intersect(const Vector3 &ray_, double t_min_, double t_max_, hit_re
       return 0;
   }
 
-  rec_.set(ray_, t, this->normal(ray_(t)), this->mat_ptr);
+  rec_.set(ray_, t, normal(ray_(t)), mat_ptr);
   return 1;
 }
 

@@ -6,8 +6,6 @@
 struct hit_record;
 
 class Material {
-  private:
-    Colour c;
   public:
     virtual bool scatter(const Vector3 &ray_, const hit_record &rec_, Colour &attenuation_, Vector3 &scattered_) const = 0;
 };
