@@ -22,8 +22,9 @@ class Lambertian : public Material {
 class Metal : public Material {
   private:
     Colour albedo;
+    double fuzziness;
 
   public:
-    Metal(const Colour &c_);
+    Metal(const Colour &c_, double fuzz_);
     virtual bool scatter(const Vector3 &ray_, const hit_record &rec_, Colour &attenuation_, Vector3 &scattered_) const override;
 };

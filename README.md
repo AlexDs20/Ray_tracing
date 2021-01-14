@@ -1,7 +1,7 @@
 # Ray tracing
 In dev. Obviously.
 
-Example of a rendered sphere and triangle using ray-tracing
+Example of rendered spheres and a pyramid using ray-tracing
 ![](rendered/Image.png)
 
 # References
@@ -16,9 +16,9 @@ Example of a rendered sphere and triangle using ray-tracing
 
 # TODO
 - [ ] Transparency
-- [ ] Multi-threading
 - [ ] Use R-tree?
 - [ ] Read Blender OBJ files
+- [ ] Texture on objects
 - [ ] Collision between rays and general objects.
 - [ ] Parsing inputs: https://www.cplusplus.com/articles/DEN36Up4/
 

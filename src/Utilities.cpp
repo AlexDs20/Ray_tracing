@@ -36,6 +36,16 @@ Triplet random_vector_unit_half_sphere(Triplet normal_){
   return N_rot;
 }
 
+Triplet random_vector_sphere(double radius_){
+  // Generate the rotation angles
+  double phi = 2*PI*my_rand();
+  double theta = acos(1 - 2*my_rand());
+  double r = radius_*my_rand();
+
+  Triplet rand_vector(sin(theta)*cos(phi), sin(theta)*sin(phi), cos(theta));
+  return r*rand_vector;
+}
+
 Colour calculate_colour(const Vector3 &ray_, const Hittable &scene_, int depth_){
   if (depth_<=0)
     return Colour(0,0,0);

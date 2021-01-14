@@ -14,11 +14,11 @@ bool Lambertian::scatter(const Vector3 &, const hit_record &rec_, Colour &attenu
   return 1;
 }
 
-Metal::Metal(const Colour &c_) : albedo(c_) {}
+Metal::Metal(const Colour &c_, double fuzz_) : albedo(c_), fuzziness(fuzz_) {}
 
 bool Metal::scatter(const Vector3 &ray_, const hit_record &rec_, Colour &attenuation_, Vector3 &scattered_) const {
   scattered_ = reflect(ray_, rec_.n);
-  scattered_.start = rec_.p;
+  scattered_ = Vector3(rec_.p, rec_.p + scattered_.unit() + random_vector_sphere(this->fuzziness) );
   attenuation_ = albedo;
-  return (dot(scattered_,rec_.n) > 0);
+  return (dot(scattered_, rec_.n) > 0);
 }
