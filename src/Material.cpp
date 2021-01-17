@@ -22,3 +22,21 @@ bool Metal::scatter(const Vector3 &ray_, const hit_record &rec_, Colour &attenua
   attenuation_ = albedo;
   return (dot(scattered_, rec_.n) > 0);
 }
+
+Dielectric::Dielectric(const Colour &c_, double ref_idx_) : albedo(c_), ref_idx(ref_idx_) {}
+
+bool Dielectric::scatter(const Vector3 &ray_, const hit_record &rec_, Colour &attenuation_, Vector3 &scattered_) const {
+  attenuation_ = albedo;
+  Vector3 ray_norm = ray_.unit();
+  double refraction_ratio = ray_.dot(rec_.n) < 0 ? 1/ref_idx : ref_idx;
+
+  double sin_theta = ray_norm.cross(rec_.n).norm();
+
+  if ( refraction_ratio*sin_theta > 1 )
+    scattered_ = reflect(ray_norm, rec_.n);
+  else
+    scattered_ = refract(ray_norm, rec_.n, refraction_ratio);
+
+  scattered_ = Vector3(rec_.p, rec_.p + scattered_); // + random_vector_sphere(this->fuzziness) );
+  return 1;
+}

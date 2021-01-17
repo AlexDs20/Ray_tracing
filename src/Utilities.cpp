@@ -77,3 +77,9 @@ double dot(const Vector3 &v1, const Triplet &v2){
 Vector3 reflect(const Vector3 &ray_, const Triplet &n_){
   return ray_ - 2*dot(ray_,n_) * n_;
 }
+
+Vector3 refract(const Vector3 &ray_, const Triplet &n_, double n_over_n_in){
+  Vector3 r_perp = n_over_n_in * ray_ - n_over_n_in * ray_.dot(n_) * n_;
+  Vector3 r_para = copysign(1, ray_.dot(n_)) * sqrt( 1 - r_perp.norm2() ) * n_;
+  return r_perp + r_para;
+}
