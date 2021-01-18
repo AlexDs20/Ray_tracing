@@ -22,11 +22,11 @@ int main(){
 srand( (unsigned)time(NULL) );
 
 // Create the camera
-Triplet cam_pos(-15.0, 1.0, 2.0);
+Triplet cam_pos(-10.0, 0.0, 2.0);
 Triplet cam_look(0,0,0.5);
 Vector3 cam_vec(cam_pos, cam_look);
 
-Camera camera(cam_vec, 0.1, 80*PI/180, 2*1024, 16/10.);
+Camera camera(cam_vec, 0.1, 100*PI/180, 2*1024, 16/9.);
 
 // Create the materials
 auto material_ground = std::make_shared<Lambertian>(Colour(0.8, 0.8, 0.0));
@@ -38,15 +38,15 @@ auto material_right  = std::make_shared<Lambertian>(Colour(0.8, 0.6, 0.2));
 // Create the objects
 Hittable_list scene;
 Triplet A1(-20.0,  0.0, -0.5);
-Triplet A2( 2.0, -50.0, -0.5);
-Triplet A3( 2.0,  50.0, -0.5);
+Triplet A2( 5.5, -50.0, -0.5);
+Triplet A3( 5.5,  50.0, -0.5);
 
 scene.add(std::make_shared<Triangle>(A1, A2, A3, material_ground));
 
-scene.add(std::make_shared<Sphere>(Triplet(-2.0,   1.0,   -0.2),   0.3, material_front));
-scene.add(std::make_shared<Sphere>(Triplet( 0.0,   1.0,    1.0),   0.5, material_left));
-scene.add(std::make_shared<Sphere>(Triplet( 0.0,   0.0,    1.0),   0.5, material_center));
-scene.add(std::make_shared<Sphere>(Triplet( 0.0,  -1.0,    1.0),   0.5, material_right));
+scene.add(std::make_shared<Sphere>(Triplet(-2.0,   0.0,   0.0),   0.5, material_front));
+scene.add(std::make_shared<Sphere>(Triplet( 0.0,   1.0,   1.0),   0.5, material_left));
+scene.add(std::make_shared<Sphere>(Triplet( 0.0,   0.0,   1.0),   0.5, material_center));
+scene.add(std::make_shared<Sphere>(Triplet( 0.0,  -1.0,   1.0),   0.5, material_right));
 
 // Pyramid
 if (1){
@@ -67,7 +67,7 @@ if (1){
 }
 // Render
 const unsigned int max_depth=50;
-const unsigned int ray_per_pixel=30;
+const unsigned int ray_per_pixel=100;
 
 // Multi-threading
 int n_procs = (int)std::thread::hardware_concurrency();

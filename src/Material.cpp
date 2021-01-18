@@ -28,15 +28,24 @@ Dielectric::Dielectric(const Colour &c_, double ref_idx_) : albedo(c_), ref_idx(
 bool Dielectric::scatter(const Vector3 &ray_, const hit_record &rec_, Colour &attenuation_, Vector3 &scattered_) const {
   attenuation_ = albedo;
   Vector3 ray_norm = ray_.unit();
-  double refraction_ratio = ray_.dot(rec_.n) < 0 ? 1/ref_idx : ref_idx;
-
+  double cos_theta = ray_norm.dot(rec_.n);
   double sin_theta = ray_norm.cross(rec_.n).norm();
 
-  if ( refraction_ratio*sin_theta > 1 )
+  double refraction_ratio = cos_theta < 0 ? 1/ref_idx : ref_idx;
+
+  double refl = reflectance((copysign(1, cos_theta)*ray_).dot(rec_.n), refraction_ratio);
+
+  if ( refraction_ratio*sin_theta > 1 || refl > my_rand() )
     scattered_ = reflect(ray_norm, rec_.n);
   else
     scattered_ = refract(ray_norm, rec_.n, refraction_ratio);
 
   scattered_ = Vector3(rec_.p, rec_.p + scattered_); // + random_vector_sphere(this->fuzziness) );
   return 1;
+}
+
+double Dielectric::reflectance(double cosine_, double ref_idx_){
+  double r0 = (1.-ref_idx_) / (1.+ref_idx_);
+  r0 *= r0;
+  return r0 + (1.-r0) *pow(1.-cosine_, 5);
 }

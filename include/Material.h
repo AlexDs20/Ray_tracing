@@ -33,6 +33,9 @@ class Dielectric : public Material {
   private:
     Colour albedo;
     double ref_idx;
+
+    static double reflectance(double cosine_, double ref_idx_);
+
   public:
     Dielectric(const Colour &c_, double ref_idx);
     virtual bool scatter(const Vector3 &ray_, const hit_record &rec_, Colour &attenuation_, Vector3 &scattered_) const override;
