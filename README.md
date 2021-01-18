@@ -12,10 +12,10 @@ Example of rendered spheres and a pyramid using ray-tracing
     (and the wiki: https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm )
 * Lambertian reflectance: https://en.wikipedia.org/wiki/Lambertian_reflectance
 * Gamma Correction: https://en.wikipedia.org/wiki/Gamma_correction
-* Specular highlight: https://en.wikipedia.org/wiki/Specular_highlight
+* Schlick's approximation: https://en.wikipedia.org/wiki/Schlick%27s_approximation
+* Fresnel's refraction: https://en.wikipedia.org/wiki/Fresnel_equations
 
 # TODO
-- [ ] Transparency
 - [ ] Use R-tree?
 - [ ] Read Blender OBJ files
 - [ ] Texture on objects

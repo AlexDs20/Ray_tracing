@@ -49,7 +49,7 @@ bool Triangle::intersect(const Vector3 &ray_, double t_min_, double t_max_, hit_
   if (t<t_min_ || t>t_max_)
     return 0;
 
-  rec_.set(ray_, t, normal(), mat_ptr);
+  rec_.set(ray_, t, this->normal(), mat_ptr);
   return 1;
 }
 
@@ -66,10 +66,7 @@ Sphere::Sphere(const Triplet &center_, const double &radius_, std::shared_ptr<Ma
 
 const Triplet Sphere::normal(const Triplet &pos) const {
   // check if p is on surface
-  double dist_to_center = (pos-center).norm();
-  if (dist_to_center-radius < EPS && dist_to_center-radius > -EPS )
     return (pos-center).unit();
-  return Triplet();
 }
 
 bool Sphere::intersect(const Vector3 &ray_, double t_min_, double t_max_, hit_record &rec_) const {
@@ -90,7 +87,7 @@ bool Sphere::intersect(const Vector3 &ray_, double t_min_, double t_max_, hit_re
       return 0;
   }
 
-  rec_.set(ray_, t, normal(ray_(t)), mat_ptr);
+  rec_.set(ray_, t, this->normal(ray_(t)), mat_ptr);
   return 1;
 }
 

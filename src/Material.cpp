@@ -30,12 +30,10 @@ bool Dielectric::scatter(const Vector3 &ray_, const hit_record &rec_, Colour &at
   Vector3 ray_norm = ray_.unit();
   double cos_theta = ray_norm.dot(rec_.n);
   double sin_theta = ray_norm.cross(rec_.n).norm();
-
   double refraction_ratio = cos_theta < 0 ? 1/ref_idx : ref_idx;
+  double aligned_cos_theta = (copysign(1, cos_theta)*ray_.unit()).dot(rec_.n);
 
-  double refl = reflectance((copysign(1, cos_theta)*ray_).dot(rec_.n), refraction_ratio);
-
-  if ( refraction_ratio*sin_theta > 1 || refl > my_rand() )
+  if ( refraction_ratio*sin_theta > 1 || reflectance(aligned_cos_theta, refraction_ratio) > my_rand() )
     scattered_ = reflect(ray_norm, rec_.n);
   else
     scattered_ = refract(ray_norm, rec_.n, refraction_ratio);

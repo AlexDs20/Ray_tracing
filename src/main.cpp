@@ -23,14 +23,14 @@ srand( (unsigned)time(NULL) );
 
 // Create the camera
 Triplet cam_pos(-10.0, 0.0, 2.0);
-Triplet cam_look(0,0,0.5);
+Triplet cam_look(0,0,0);
 Vector3 cam_vec(cam_pos, cam_look);
 
-Camera camera(cam_vec, 0.1, 100*PI/180, 2*1024, 16/9.);
+Camera camera(cam_vec, 0.1, 100*PI/180, 1024, 16/9.);
 
 // Create the materials
-auto material_ground = std::make_shared<Lambertian>(Colour(0.8, 0.8, 0.0));
-auto material_front  = std::make_shared<Dielectric>(Colour(1.0, 1.0, 1.0), 1.7);
+auto material_ground = std::make_shared<Lambertian>(Colour(0.1, 0.1, 0.7));
+auto material_front  = std::make_shared<Dielectric>(Colour(1.0, 1.0, 1.0), 1.3);
 auto material_left   = std::make_shared<Metal>(Colour(0.8, 0.8, 0.8), 0.0);
 auto material_center = std::make_shared<Lambertian>(Colour(0.7, 0.3, 0.0));
 auto material_right  = std::make_shared<Lambertian>(Colour(0.8, 0.6, 0.2));
@@ -43,7 +43,7 @@ Triplet A3( 5.5,  50.0, -0.5);
 
 scene.add(std::make_shared<Triangle>(A1, A2, A3, material_ground));
 
-scene.add(std::make_shared<Sphere>(Triplet(-2.0,   0.0,   0.0),   0.5, material_front));
+scene.add(std::make_shared<Sphere>(Triplet(-5.0,   0.0,   0.0),   0.5, material_front));
 scene.add(std::make_shared<Sphere>(Triplet( 0.0,   1.0,   1.0),   0.5, material_left));
 scene.add(std::make_shared<Sphere>(Triplet( 0.0,   0.0,   1.0),   0.5, material_center));
 scene.add(std::make_shared<Sphere>(Triplet( 0.0,  -1.0,   1.0),   0.5, material_right));
@@ -85,7 +85,7 @@ else{
 }
 
 // Save Image
-const std::string filename = "Image.ppm";
+const std::string filename = "rendered/Image.ppm";
 camera.save_image(filename);
 
 return 0;
