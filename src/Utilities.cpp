@@ -2,48 +2,51 @@
 
 #include <cmath>
 #include <cstdlib>
+#include <vector>
 #include "Define.h"
 #include "Colour.h"
 #include "Vector3.h"
 #include "Triplet.h"
 #include "Hittable.h"
 
+void rand_in_disc(double r, double *coord){
+  // Return the coordinates of a uniformly distributed random point in disc of radius r
+  // point = u*e_u + v*e_v
+  // coord[0] = u, coord[1] = v
+  double phi = (2*my_rand() - 1)*PI;
+  double a = sqrt(r * my_rand());
 
-Triplet random_vector_unit_half_sphere(Triplet normal_){
-  // Creates a vector perpendicular to the normal
-  // i.e. k.dot(N) = 0
-  // k = rand
-  Triplet k(my_rand(), my_rand(), my_rand());
-  if (normal_.z() != 0)
-    k.z() = - (k.x()*normal_.x()+k.y()*normal_.y())/normal_.z();
-  else if (normal_.y() != 0)
-    k.y() = - (k.x()*normal_.x()+k.z()*normal_.z())/normal_.y();
-  else if (normal_.x() != 0)
-    k.x() = - (k.y()*normal_.y()+k.z()*normal_.z())/normal_.x();
-  k = k.unit();
+  coord[0] = a*cos(phi);
+  coord[1] = a*sin(phi);
+}
 
-  // Generate the rotation angles
+Triplet random_vector_half_unit_sphere(const Triplet &normal_){
   double phi = 2*PI*my_rand();
   double theta = acos(1 - my_rand());
+  Triplet v(sin(theta)*cos(phi), sin(theta)*sin(phi), cos(theta));
 
-  // Start with the theta rotation around k
-  // using Rodrigues formula: https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
-  Triplet N_rot;
-  N_rot = normal_*cos(theta) + (k.cross(normal_))*sin(theta) + k*(k.dot(normal_))*(1-cos(theta));
-  // Now the phi rotation around the normal_
-  N_rot = N_rot*cos(phi) + (normal_.cross(N_rot))*sin(phi) + normal_*(normal_.dot(N_rot))*(1-cos(phi));
+  Triplet z(0,0,1);
 
-  return N_rot;
+  if (z == normal_.unit())
+    return v;
+
+  Triplet k = z.cross(normal_.unit());
+  theta = asin(k.norm());
+  v = v*cos(theta) + k.cross(v) * sin(theta) + k * (k.dot(v)) * (1-cos(theta));
+
+  return v;
 }
 
 Triplet random_vector_sphere(double radius_){
-  // Generate the rotation angles
-  double phi = 2*PI*my_rand();
-  double theta = acos(1 - 2*my_rand());
-  double r = radius_*my_rand();
-
-  Triplet rand_vector(sin(theta)*cos(phi), sin(theta)*sin(phi), cos(theta));
-  return r*rand_vector;
+  // Returns a random point in a sphere of radius_
+  // with uniform distribution
+  // Solution from:
+  // https://math.stackexchange.com/questions/87230/picking-random-points-in-the-volume-of-sphere-with-uniform-probability/87238#87238
+  double u = radius_ * pow(my_rand(), 1/3);
+  Triplet R(my_rand(), my_rand(), my_rand());
+  R = 2*R - Triplet(1,1,1);
+  R = R.unit();
+  return u*R;
 }
 
 Colour calculate_colour(const Vector3 &ray_, const Hittable &scene_, int depth_){
@@ -68,6 +71,10 @@ void gamma_correction(Colour &colour_, double gamma_){
 
 double my_rand(){
   return (double)rand()/RAND_MAX;
+}
+
+double my_rand(double low, double up){
+  return (up-low)*rand()/RAND_MAX + low;
 }
 
 double dot(const Vector3 &v1, const Triplet &v2){

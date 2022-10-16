@@ -46,10 +46,15 @@ Camera::Camera(const Vector3 &pos_, const double dist_, const double fov_, \
       screen( dist_*tan(fov_/2)/(2*w_), w_, w_/aspect_ratio_, dir), \
       img(w_, w_/aspect_ratio_) { }
 
-void Camera::render(const Hittable_list &scene_, const unsigned int rpp_, const unsigned int &max_depth_, const int n_procs_) const {
+Vector3 Camera::get_ray(unsigned int i, unsigned int j) const {
   Triplet center_screen = dir(dist_screen/dir.norm());
-  Triplet S = dir.start;
-  Triplet E;
+  Triplet Start = dir.start;
+  Triplet End = center_screen + screen.rand_pixel_pos(i, j);
+  Vector3 ray(Start, End);
+  return ray;
+}
+
+void Camera::render(const Hittable_list &scene_, const unsigned int rpp_, const unsigned int &max_depth_, const int n_procs_) const {
   Vector3 ray;
   Colour colour(0,0,0);
   double gamma = 2.2;
@@ -59,8 +64,7 @@ void Camera::render(const Hittable_list &scene_, const unsigned int rpp_, const 
     for (unsigned int j=1; j<screen.h; j++){
       colour = Colour(0,0,0);
       for(unsigned int k=0; k<rpp_; k++){
-        E = center_screen + screen.rand_pixel_pos(i,j);
-        ray = Vector3(S,E);
+        ray = get_ray(i, j);
         colour += calculate_colour(ray, scene_, max_depth_)/(double)rpp_;
       }
       gamma_correction(colour, gamma);

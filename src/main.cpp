@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <thread>
 
+#include <cmath>
+
 #include "Define.h"
 #include "Vector3.h"
 #include "Triplet.h"
@@ -21,8 +23,13 @@ int main(){
 // Set the random seed
 srand( (unsigned)time(NULL) );
 
+for (int i=0; i<50; i++)
+  std::cout << my_rand(-5, 5) << std::endl;
+
+
+if (0){
 // Create the camera
-Triplet cam_pos(-10.0, 0.0, 2.0);
+Triplet cam_pos(-15.0, 0.0, 2.0);
 Triplet cam_look(0,0,0);
 Vector3 cam_vec(cam_pos, cam_look);
 
@@ -43,15 +50,15 @@ Triplet A3( 5.5,  50.0, -0.5);
 
 scene.add(std::make_shared<Triangle>(A1, A2, A3, material_ground));
 
-scene.add(std::make_shared<Sphere>(Triplet(-5.0,   0.0,   0.0),   0.5, material_front));
-scene.add(std::make_shared<Sphere>(Triplet( 0.0,   1.0,   1.0),   0.5, material_left));
-scene.add(std::make_shared<Sphere>(Triplet( 0.0,   0.0,   1.0),   0.5, material_center));
-scene.add(std::make_shared<Sphere>(Triplet( 0.0,  -1.0,   1.0),   0.5, material_right));
+scene.add(std::make_shared<Sphere>(Triplet(-5.0,   0.0,   0.0),  0.5, material_front));
+scene.add(std::make_shared<Sphere>(Triplet( 0.0,   1.0,   1.0),  0.5, material_left));
+scene.add(std::make_shared<Sphere>(Triplet( 0.0,   0.0,   1.0),  0.5, material_center));
+scene.add(std::make_shared<Sphere>(Triplet( 0.0,  -1.0,   1.0),  0.5, material_right));
 
 // Pyramid
 if (1){
   auto mirror   = std::make_shared<Metal>(Colour(0.2, 0.8, 0.4), 0.0);
-  auto mirror_fuzzy   = std::make_shared<Metal>(Colour(0.2, 0.8, 0.4), 0.3);
+  auto mirror_fuzzy   = std::make_shared<Metal>(Colour(0.2, 0.8, 0.4), 0.15);
   // basis
   Triplet B1(-1.5,  0.0, -0.5);
   Triplet B2( 0.5, -2.0, -0.5);
@@ -66,8 +73,8 @@ if (1){
   scene.add(std::make_shared<Triangle>(B3, B1, T, mirror));
 }
 // Render
-const unsigned int max_depth=50;
-const unsigned int ray_per_pixel=100;
+const unsigned int max_depth=20;
+const unsigned int ray_per_pixel=15;
 
 // Multi-threading
 int n_procs = (int)std::thread::hardware_concurrency();
@@ -87,6 +94,7 @@ else{
 // Save Image
 const std::string filename = "rendered/Image.ppm";
 camera.save_image(filename);
+}
 
 return 0;
 }

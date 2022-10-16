@@ -8,7 +8,7 @@
 Lambertian::Lambertian(const Colour &c_) : albedo(c_) {}
 
 bool Lambertian::scatter(const Vector3 &, const hit_record &rec_, Colour &attenuation_, Vector3 &scattered_) const {
-  Triplet scatter_dir = random_vector_unit_half_sphere(rec_.n);
+  Triplet scatter_dir = random_vector_half_unit_sphere(rec_.n);
   scattered_ = Vector3(rec_.p, rec_.p + scatter_dir);
   attenuation_ = albedo;
   return 1;

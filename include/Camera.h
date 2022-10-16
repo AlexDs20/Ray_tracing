@@ -44,6 +44,7 @@ class Camera{
           );
 
     // Methods
+    Vector3 get_ray(unsigned int i, unsigned int j) const;
     // t_min_ and t_max_ are the distances from the position of the camera
     void render(const Hittable_list &scene_, const unsigned int ray_per_pixel_, const unsigned int &max_depth_, const int n_procs_) const;
     void save_image(const std::string &filename);

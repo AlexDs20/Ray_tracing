@@ -7,7 +7,9 @@ Example of rendered spheres and a pyramid using ray-tracing
 # References
 * General idea: https://www.youtube.com/watch?v=gBPNO6ruevk
 * Reference book: Ray-tracing gems: http://www.realtimerendering.com/raytracinggems/
+* Ray tracing in a week-end: https://raytracing.github.io/
 * All there is: http://www.realtimerendering.com/raytracing.html
+
 * Intersection between a line and a triangle: doi:10.1080/10867651.1997.10487468
     (and the wiki: https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm )
 * Lambertian reflectance: https://en.wikipedia.org/wiki/Lambertian_reflectance
@@ -31,8 +33,6 @@ Example of rendered spheres and a pyramid using ray-tracing
   encounters an object.
 * If it encounters an object calculate the color, else give the "default
   background color" to that pixel.
-
-## How the colour is calculated
 
 # Requirements
 * C++ 11
