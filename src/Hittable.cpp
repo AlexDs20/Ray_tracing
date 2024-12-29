@@ -69,7 +69,7 @@ const Triplet Sphere::normal(const Triplet &pos) const {
     return (pos-center).unit();
 }
 
-bool Sphere::intersect(const Vector3 &ray_, double t_min_, double t_max_, hit_record &rec_) const {
+bool Sphere::intertect(const Vector3 &ray_, double t_min_, double t_max_, hit_record &rec_) const {
   Vector3 CS(this->center, ray_.start);
   double a = ray_.norm2();
   double b_half = CS.dot(ray_);

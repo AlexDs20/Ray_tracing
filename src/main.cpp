@@ -27,7 +27,7 @@ for (int i=0; i<50; i++)
   std::cout << my_rand(-5, 5) << std::endl;
 
 
-if (0){
+if (1){
 // Create the camera
 Triplet cam_pos(-15.0, 0.0, 2.0);
 Triplet cam_look(0,0,0);
@@ -73,7 +73,7 @@ if (1){
   scene.add(std::make_shared<Triangle>(B3, B1, T, mirror));
 }
 // Render
-const unsigned int max_depth=20;
+const unsigned int max_depth=5;
 const unsigned int ray_per_pixel=15;
 
 // Multi-threading
