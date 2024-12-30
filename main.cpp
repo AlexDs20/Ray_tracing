@@ -1,48 +1,44 @@
-#include <cstdint>
-#include <stdfloat>
 #include <stdio.h>
 #include <cstdlib>
 
 #include <iostream>
 #include <fstream>
 
-typedef float f32;
-typedef double f64;
-typedef float f32x3[3];
-typedef float f32x4[4];
+#include "types.h"
 
-typedef uint32_t u32;
-typedef uint32_t u32x3[3];
-typedef uint8_t u8;
-
-struct Screen {
+struct Camera {
     u32 width;
     u32 height;
+    f32 viewport_height = 9.0f/16.0f;
+    f32 viewport_width = 1.0f;
+    f32 aspect_ratio = 16.0f/9.0f;
+
+    f32x3 O = {0.0f, 0.0f, 1.0f};
+    f32x3 dir = {0.0f, 0.0f, -1.0f};
+    f32x3 up = {0.0f, 1.0f, 0.0f};
+    f32 focal_length = 1.0f;
+};
+
+struct Ray {
+    f32x3 O;
+    f32x3 dir;
 };
 
 struct Sphere {
-    f32x3 x;
+    f32x3 pos;
     f32 r;
 };
 
-struct Scene {
-    Sphere* spheres;
-};
-
-
-void write_ppm_from_array(const f32x4* data, const Screen& screen, const char* filepath) {
-    const u32 width = screen.width;
-    const u32 height = screen.height;
-
+void write_ppm_from_array(const f32x4* data, const u32 height, const u32 width, const char* filepath) {
     std::ofstream file;
     file.open(filepath);
     file << "P3\n# test.ppm\n" << width << " " << height << "\n255\n";
 
     for (u32 h=0; h<height; ++h) {
         for (u32 w=0; w<width; ++w) {
-            file << " " << (u32)(255*data[w + h * width][0]);
-            file << " " << (u32)(255*data[w + h * width][1]);
-            file << " " << (u32)(255*data[w + h * width][2]);
+            file << " " << (u32)(255*data[w + h * width].x);
+            file << " " << (u32)(255*data[w + h * width].y);
+            file << " " << (u32)(255*data[w + h * width].z);
         }
         file << "\n";
     }
@@ -50,74 +46,76 @@ void write_ppm_from_array(const f32x4* data, const Screen& screen, const char* f
     printf("File written: %s\n", filepath);
 }
 
-void cross(f32x3 out, const f32x3 a, const f32x3 b) {
-    out[0] = a[1]*b[2] - a[2]*b[1];
-    out[1] = a[2]*b[0] - a[0]*b[2];
-    out[2] = a[0]*b[1] - a[1]*b[0];
+bool ray_sphere_intersect(Ray& ray, Sphere& sphere){
+    f32x3 C = sphere.pos;
+    f32x3 Q = ray.O;
+    f32x3 QC = Q-C;
+    f32 half_b = -dot(ray.dir, QC);
+    f32 a = 1.0f;       // length2(ray.dir);
+    f32 c = length2(QC) - sphere.r*sphere.r;
+
+    f32 delta = half_b*half_b - a * c;
+
+    if (delta<0) {
+        return false;
+    }
+
+    return true;
 }
 
-int main() {
-    Screen screen = {1024, 768};
 
-    f32x4* result = (f32x4*)malloc(4 * screen.width * screen.height * sizeof(f32));
+int main() {
+    Camera camera = { 960, 540 };
+
+    f32x4* result = (f32x4*)malloc(camera.width * camera.height * sizeof(f32x4));
 
     const u32 N = 2;
     Sphere spheres[N];
-    spheres[0] = {{-0.5f, 0.25f, 0.0f}, 0.5f};
-    spheres[1] = {{0.65f, 0.15f, 0.0f}, 0.5f};
-    Scene scene = {
-        .spheres=&spheres[0]
+    spheres[0] = {
+        {-0.4f, -0.1f, -2.5f},
+        0.1f
+    };
+    spheres[1] = {
+        {0.25f, 0.1f, -3.5f},
+        0.2f
     };
 
     const f32x4 background = {0.7f, 0.3f, 0.2f, 1.0f};
     const f32x4 sphere_color = {0.2f, 0.3f, 0.6f, 1.0f};
 
-    const f32x3 lens_pos = {0.0f, 0.0f, 0.0f};
-    const f32x3 look_dir = {0.0f, 0.0f, -1.0f};
-    const f32x3 up = {0.0f, 1.0f, 0.0f};
-    const f32 res = 0.01f;
+    f32x3 w_dir = cross(camera.dir, camera.up);
+    f32x3 h_dir = cross(w_dir, camera.dir);
 
-    f32x3 w_dir;
-    cross(w_dir, look_dir, up);
-    f32x3 h_dir;
-    cross(h_dir, w_dir, look_dir);
+    f32 half_width =  (f32)camera.viewport_width  * 0.5f;
+    f32 half_height = (f32)camera.viewport_height * 0.5f;
+    f32 res = camera.viewport_width / camera.width;
+    f32x3 viewport_center = camera.O + camera.focal_length*camera.dir;
 
+    for (u32 h=0; h<camera.height; ++h) {
+        for (u32 w=0; w<camera.width; ++w) {
+            // Go through pixels from top left to bottom right
+            f32 w_shift = -half_width  + ((f32)w+0.5f) * res;
+            f32 h_shift =  half_height - ((f32)h+0.5f) * res;
+            // TODO(alex): Computation of pixel pos are probably not fully correct...
+            f32x3 pixel_pos = viewport_center + w_shift * w_dir + h_shift*h_dir;
 
-    for (u32 h=0; h<screen.height; ++h) {
-        for (u32 w=0; w<screen.width; ++w) {
-            f32 w_shift = - ((f32)screen.width  * res)/2 + (f32)(w+0.5f) * res;
-            f32 h_shift = - ((f32)screen.height * res)/2 + (f32)(h+0.5f) * res;
-            f32 x = lens_pos[0] + w_shift * w_dir[0] + h_shift * h_dir[0];
-            f32 y = lens_pos[1] + w_shift * w_dir[1] + h_shift * h_dir[1];
-            f32 z = lens_pos[2] + w_shift * w_dir[2] + h_shift * h_dir[2];
-            printf("(%.3f, %.3f, %.3f)\n", x, y, z);
+            Ray ray = { camera.O, normalize(pixel_pos - camera.O) };
 
             bool no_collision = true;
             for (u32 n=0; n<N; n++) {
-                f32 x_diff = (x-scene.spheres[n].x[0]);
-                f32 y_diff = (y-scene.spheres[n].x[1]);
-                f32 z_diff = (z-scene.spheres[n].x[2]);
-                f32 r = scene.spheres[n].r;
-
-                if ( x_diff*x_diff + y_diff*y_diff + z_diff*z_diff < r*r ) {
-                    result[w + h*screen.width][0] = sphere_color[0];
-                    result[w + h*screen.width][1] = sphere_color[1];
-                    result[w + h*screen.width][2] = sphere_color[2];
-                    result[w + h*screen.width][3] = sphere_color[3];
+                if (ray_sphere_intersect(ray, spheres[n])){
+                    result[w + h*camera.width] = sphere_color;
                     no_collision = false;
                     break;
                 }
             }
 
             if (no_collision) {
-                // RGBA
-                result[w + h*screen.width][0] = background[0];
-                result[w + h*screen.width][1] = background[1];
-                result[w + h*screen.width][2] = background[2];
-                result[w + h*screen.width][3] = background[3];
+                result[w + h*camera.width] = background;
             }
         }
     }
 
-    write_ppm_from_array(result, screen, "test.ppm");
+    write_ppm_from_array(result, camera.height, camera.width, "test.ppm");
+    free(result);
 }
