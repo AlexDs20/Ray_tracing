@@ -25,7 +25,7 @@ struct Ray {
 };
 
 struct Sphere {
-    f32x3 pos;
+    f32x3 O;
     f32 r;
 };
 
@@ -46,8 +46,8 @@ void write_ppm_from_array(const f32x4* data, const u32 height, const u32 width, 
     printf("File written: %s\n", filepath);
 }
 
-bool ray_sphere_intersect(Ray& ray, Sphere& sphere){
-    f32x3 C = sphere.pos;
+f32 ray_sphere_intersect(Ray& ray, Sphere& sphere){
+    f32x3 C = sphere.O;
     f32x3 Q = ray.O;
     f32x3 QC = Q-C;
     f32 half_b = -dot(ray.dir, QC);
@@ -57,10 +57,12 @@ bool ray_sphere_intersect(Ray& ray, Sphere& sphere){
     f32 delta = half_b*half_b - a * c;
 
     if (delta<0) {
-        return false;
+        return 0.0f;
     }
 
-    return true;
+    f32 t = -(half_b - sqrt(delta))/a;
+
+    return t;
 }
 
 
@@ -96,21 +98,22 @@ int main() {
             // Go through pixels from top left to bottom right
             f32 w_shift = -half_width  + ((f32)w+0.5f) * res;
             f32 h_shift =  half_height - ((f32)h+0.5f) * res;
+
             // TODO(alex): Computation of pixel pos are probably not fully correct...
             f32x3 pixel_pos = viewport_center + w_shift * w_dir + h_shift*h_dir;
 
             Ray ray = { camera.O, normalize(pixel_pos - camera.O) };
 
-            bool no_collision = true;
+            f32 t = 0.0f;
             for (u32 n=0; n<N; n++) {
-                if (ray_sphere_intersect(ray, spheres[n])){
+                t = ray_sphere_intersect(ray, spheres[n]);
+                if (t!=0){
                     result[w + h*camera.width] = sphere_color;
-                    no_collision = false;
                     break;
                 }
             }
 
-            if (no_collision) {
+            if (t==0) {
                 result[w + h*camera.width] = background;
             }
         }
