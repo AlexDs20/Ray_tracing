@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <cstdlib>
 
 #include <iostream>
@@ -29,7 +30,7 @@ struct Sphere {
     f32 r;
 };
 
-void write_ppm_from_array(const f32x4* data, const u32 height, const u32 width, const char* filepath) {
+void write_ppm_from_array(const f32x3* data, const u32 height, const u32 width, const char* filepath) {
     std::ofstream file;
     file.open(filepath);
     file << "P3\n# test.ppm\n" << width << " " << height << "\n255\n";
@@ -46,44 +47,68 @@ void write_ppm_from_array(const f32x4* data, const u32 height, const u32 width, 
     printf("File written: %s\n", filepath);
 }
 
+f32 clamp(f32 x, f32 minimum, f32 maximum) {
+    if (x < minimum) return minimum;
+    if (x > maximum) return maximum;
+    return x;
+}
+
 f32 ray_sphere_intersect(Ray& ray, Sphere& sphere){
-    f32x3 C = sphere.O;
-    f32x3 Q = ray.O;
-    f32x3 QC = Q-C;
-    f32 half_b = -dot(ray.dir, QC);
-    f32 a = 1.0f;       // length2(ray.dir);
-    f32 c = length2(QC) - sphere.r*sphere.r;
+    const f32x3 C = sphere.O;
+    const f32x3 O = ray.O;
+    const f32x3 OC = C-O;
+    const f32 half_b = dot(ray.dir, OC);
+    const f32 a = 1.0f;       // length2(ray.dir);
+    const f32 c = length2(OC) - sphere.r*sphere.r;
 
     f32 delta = half_b*half_b - a * c;
 
-    if (delta<0) {
+    if (delta < 0) {
         return 0.0f;
     }
 
-    f32 t = -(half_b - sqrt(delta))/a;
+    f32 t = (half_b - sqrt(delta))/a;
 
     return t;
+}
+
+inline f32x3 gamma_correct(f32x3 colour) {
+    return sqrt(colour);
+}
+
+f32 random_in_range(f32 low, f32 high) {            // inclusive min and max
+    return low + ((f32)rand() / RAND_MAX) * (high - low);
+}
+
+f32x3 random_vector_sphere() {
+    while(true) {
+        f32 x = random_in_range(-0.5f, 0.5f);
+        f32 y = random_in_range(-0.5f, 0.5f);
+        f32 z = random_in_range(-0.5f, 0.5f);
+        if (x*x+y*y+z*z <= 1.0f) return normalize({x, y, z});
+    }
 }
 
 
 int main() {
     Camera camera = { 960, 540 };
 
-    f32x4* result = (f32x4*)malloc(camera.width * camera.height * sizeof(f32x4));
+    f32x3* result = (f32x3*)malloc(camera.width * camera.height * sizeof(f32x3));
 
     const u32 N = 2;
     Sphere spheres[N];
     spheres[0] = {
-        {-0.4f, -0.1f, -2.5f},
-        0.1f
+        {-0.5f, -0.1f, -2.5f},
+        0.5f
     };
     spheres[1] = {
-        {0.25f, 0.1f, -3.5f},
-        0.2f
+        {0.5f, -0.1f,  -2.5f},
+        0.5f
     };
 
-    const f32x4 background = {0.7f, 0.3f, 0.2f, 1.0f};
-    const f32x4 sphere_color = {0.2f, 0.3f, 0.6f, 1.0f};
+    const f32x3 background = {0.7f, 0.3f, 0.2f};
+    const f32x3 sphere_colour = {0.2f, 0.3f, 0.6f};
+    const u32 max_depth = 10;
 
     f32x3 w_dir = cross(camera.dir, camera.up);
     f32x3 h_dir = cross(w_dir, camera.dir);
@@ -92,6 +117,8 @@ int main() {
     f32 half_height = (f32)camera.viewport_height * 0.5f;
     f32 res = camera.viewport_width / camera.width;
     f32x3 viewport_center = camera.O + camera.focal_length*camera.dir;
+
+    f32x3* intermediate_colours = (f32x3*) calloc(3*max_depth, sizeof(f32));
 
     for (u32 h=0; h<camera.height; ++h) {
         for (u32 w=0; w<camera.width; ++w) {
@@ -104,17 +131,61 @@ int main() {
 
             Ray ray = { camera.O, normalize(pixel_pos - camera.O) };
 
-            f32 t = 0.0f;
-            for (u32 n=0; n<N; n++) {
-                t = ray_sphere_intersect(ray, spheres[n]);
-                if (t!=0){
-                    result[w + h*camera.width] = sphere_color;
-                    break;
+            if (1) {
+                u32 depth;
+                for (depth=0; depth<max_depth; depth++) {
+
+                    f32 t = 0.0f;
+                    u32 n;
+                    for (n=0; n<N; n++) {
+                        t = ray_sphere_intersect(ray, spheres[n]);
+
+                        // TODO(alex): Do not break, keep going but only keep what is closest!
+                        if (t>1e-7f){
+                            intermediate_colours[depth] = sphere_colour;
+                            break;
+                        }
+                    }
+                    if (t>=1e-7f) {
+                        // Create new ray
+                        f32x3 x_intersect = ray.O + t * ray.dir;
+                        f32x3 N = normalize((x_intersect - spheres[n].O) / spheres[n].r);        // normalize(spheres[n].O - x_intersect); If x_intersect is good enough, just divide by sphere R
+                        f32x3 random = random_vector_sphere();
+                        random = dot(random, N)>0 ? random : -random;
+                        ray.O = x_intersect;
+                        ray.dir = random;
+                    } else {
+                        intermediate_colours[depth] = background;
+                        break;
+                    }
+
                 }
+                for (u32 i=1; i<depth; i++) {
+                    intermediate_colours[0] *= intermediate_colours[i];
+                }
+                f32x3 pixel_colour = intermediate_colours[0];
+                result[w + h*camera.width] = gamma_correct(pixel_colour);
             }
 
-            if (t==0) {
-                result[w + h*camera.width] = background;
+
+            if (0) {
+                f32x3 pixel_colour;
+                f32 t = 0.0f;
+                for (u32 n=0; n<N; n++) {
+                    t = ray_sphere_intersect(ray, spheres[n]);
+
+                    if (t>1e-7f){
+                        f32x3 x_intersect = ray.O + t * ray.dir;
+                        f32x3 N = (spheres[n].O - x_intersect)/spheres[n].r;        // normalize(spheres[n].O - x_intersect); If x_intersect is good enough, just divide by sphere R
+                        pixel_colour = 0.5f * sphere_colour;
+                        break;
+                    }
+                }
+
+                if (t==0) {
+                    pixel_colour = background;
+                }
+                result[w + h*camera.width] = gamma_correct(pixel_colour);
             }
         }
     }
