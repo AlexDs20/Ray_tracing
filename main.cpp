@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <cstdlib>
+#include <cfloat>
 
 #include <iostream>
 #include <fstream>
@@ -73,6 +74,7 @@ f32 ray_sphere_intersect(Ray& ray, Sphere& sphere){
 }
 
 inline f32x3 gamma_correct(f32x3 colour) {
+    // return colour;
     return sqrt(colour);
 }
 
@@ -106,9 +108,10 @@ int main() {
         0.5f
     };
 
-    const f32x3 background = {0.7f, 0.3f, 0.2f};
+    // const f32x3 background = {0.7f, 0.3f, 0.2f};
+    const f32x3 background = {0.5f, 0.7f, 1.0f};
     const f32x3 sphere_colour = {0.2f, 0.3f, 0.6f};
-    const u32 max_depth = 10;
+    const u32 max_depth = 5;
 
     f32x3 w_dir = cross(camera.dir, camera.up);
     f32x3 h_dir = cross(w_dir, camera.dir);
@@ -117,8 +120,6 @@ int main() {
     f32 half_height = (f32)camera.viewport_height * 0.5f;
     f32 res = camera.viewport_width / camera.width;
     f32x3 viewport_center = camera.O + camera.focal_length*camera.dir;
-
-    f32x3* intermediate_colours = (f32x3*) calloc(3*max_depth, sizeof(f32));
 
     for (u32 h=0; h<camera.height; ++h) {
         for (u32 w=0; w<camera.width; ++w) {
@@ -129,41 +130,39 @@ int main() {
             // TODO(alex): Computation of pixel pos are probably not fully correct...
             f32x3 pixel_pos = viewport_center + w_shift * w_dir + h_shift*h_dir;
 
+            f32x3 pixel_colour = {1.0f, 1.0f, 1.0f};
+
             Ray ray = { camera.O, normalize(pixel_pos - camera.O) };
 
             if (1) {
                 u32 depth;
                 for (depth=0; depth<max_depth; depth++) {
 
-                    f32 t = 0.0f;
-                    u32 n;
-                    for (n=0; n<N; n++) {
-                        t = ray_sphere_intersect(ray, spheres[n]);
-
+                    f32 t = FLT_MAX;
+                    int s = -1;
+                    for (u32 n=0; n<N; n++) {
+                        f32 tmp = ray_sphere_intersect(ray, spheres[n]);
                         // TODO(alex): Do not break, keep going but only keep what is closest!
-                        if (t>1e-7f){
-                            intermediate_colours[depth] = sphere_colour;
-                            break;
+                        if ((tmp>1e-7f) && (tmp < t)){
+                            t = tmp;
+                            s = n;
                         }
                     }
-                    if (t>=1e-7f) {
+                    if (s!=-1) {
                         // Create new ray
                         f32x3 x_intersect = ray.O + t * ray.dir;
-                        f32x3 N = normalize((x_intersect - spheres[n].O) / spheres[n].r);        // normalize(spheres[n].O - x_intersect); If x_intersect is good enough, just divide by sphere R
+                        f32x3 N = normalize((x_intersect - spheres[s].O));        // normalize(spheres[n].O - x_intersect); If x_intersect is good enough, just divide by sphere R
                         f32x3 random = random_vector_sphere();
                         random = dot(random, N)>0 ? random : -random;
                         ray.O = x_intersect;
                         ray.dir = random;
+                        pixel_colour *= sphere_colour;
                     } else {
-                        intermediate_colours[depth] = background;
+                        pixel_colour *= background;
                         break;
                     }
 
                 }
-                for (u32 i=1; i<depth; i++) {
-                    intermediate_colours[0] *= intermediate_colours[i];
-                }
-                f32x3 pixel_colour = intermediate_colours[0];
                 result[w + h*camera.width] = gamma_correct(pixel_colour);
             }
 
