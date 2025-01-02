@@ -15,8 +15,8 @@ struct Camera {
     f32 viewport_width = 1.0f;
     f32 aspect_ratio = 16.0f/9.0f;
 
-    f32x3 O = {0.0f, 0.0f, 1.0f};
-    f32x3 dir = {0.0f, 0.0f, -1.0f};
+    f32x3 O = {0.0f, 5.0f, 5.0f};
+    f32x3 dir = normalize({0.0f, -0.6f, -1.0f});
     f32x3 up = {0.0f, 1.0f, 0.0f};
     f32 focal_length = 1.0f;
 };
@@ -92,8 +92,10 @@ f32x3 random_vector_sphere() {
 }
 
 
-int main() {
-    Camera camera = { 960, 540 };
+int main(int argc, char** argv) {
+    // Camera camera = { 960, 540 };
+    Camera camera = { 1024, 576 };
+    // Camera camera = { 1920, 1080 };
 
     f32x3* result = (f32x3*)malloc(camera.width * camera.height * sizeof(f32x3));
 
@@ -108,14 +110,21 @@ int main() {
         0.5f
     };
     spheres[2] = {
-        {0.0f, -4.0f,  -3.5f},
+        {0.0f, -4.0f,  -2.8f},
         3.5f
     };
 
+    f32x3 sphere_colours[3];
+    sphere_colours[0] = { 0.2f, 0.3f, 0.6f };
+    sphere_colours[1] = { 0.6f, 0.2f, 0.3f };
+    sphere_colours[2] = { 0.3f, 0.6f, 0.2f };
+
     // const f32x3 background = {0.7f, 0.3f, 0.2f};
-    const f32x3 background = {0.5f, 0.7f, 1.0f};
-    const f32x3 sphere_colour = {0.2f, 0.3f, 0.6f};
-    const u32 max_depth = 2;
+    const f32x3 background = {1.0f, 1.0f, 1.0f};
+    // const f32x3 background = {0.5f, 0.7f, 1.0f};
+    const u32 max_depth = 4;
+    const u32 rays_per_pixel = 8;
+    const f32 rpp_factor = 1.0f / rays_per_pixel;
 
     f32x3 w_dir = cross(camera.dir, camera.up);
     f32x3 h_dir = cross(w_dir, camera.dir);
@@ -127,18 +136,22 @@ int main() {
 
     for (u32 h=0; h<camera.height; ++h) {
         for (u32 w=0; w<camera.width; ++w) {
-            // Go through pixels from top left to bottom right
-            f32 w_shift = -half_width  + ((f32)w+0.5f) * res;
-            f32 h_shift =  half_height - ((f32)h+0.5f) * res;
 
-            // TODO(alex): Computation of pixel pos are probably not fully correct...
-            f32x3 pixel_pos = viewport_center + w_shift * w_dir + h_shift*h_dir;
+            f32x3 pixel_colour = {0.0f, 0.0f, 0.0f};
 
-            f32x3 pixel_colour = {1.0f, 1.0f, 1.0f};
+            for (u32 ray_idx=0; ray_idx<rays_per_pixel; ray_idx++) {
 
-            Ray ray = { camera.O, normalize(pixel_pos - camera.O) };
+                // Go through pixels from top left to bottom right
+                f32 w_shift = -half_width  + ((f32)w+random_in_range(0.0f, 1.0f)) * res;
+                f32 h_shift =  half_height - ((f32)h+random_in_range(0.0f, 1.0f)) * res;
 
-            if (1) {
+                // TODO(alex): Computation of pixel pos are probably not fully correct...
+                f32x3 pixel_pos = viewport_center + w_shift * w_dir + h_shift*h_dir;
+
+                f32x3 partial_pixel_colour = {1.0f, 1.0f, 1.0f};
+
+                Ray ray = { camera.O, normalize(pixel_pos - camera.O) };
+
                 u32 depth;
                 for (depth=0; depth<max_depth; depth++) {
 
@@ -156,22 +169,31 @@ int main() {
                         // Create new ray
                         f32x3 x_intersect = ray.O + t * ray.dir;
                         f32x3 N = normalize((x_intersect - spheres[s].O));        // normalize(spheres[n].O - x_intersect); If x_intersect is good enough, just divide by sphere R
-                        f32x3 random = random_vector_sphere();
-                        random = dot(random, N)>0 ? random : -random;
+                        f32x3 random;
+
+                        if (1) {       // Lambertian
+                            random = normalize(N + random_vector_sphere());
+                        } else {
+                            random = random_vector_sphere();
+                            random = dot(random, N)>0 ? random : -random;
+                        }
+
                         ray.O = x_intersect;
                         ray.dir = random;
-                        pixel_colour *= sphere_colour;
+                        partial_pixel_colour *= sphere_colours[s];
                     } else {
-                        pixel_colour *= background;
+                        partial_pixel_colour *= background;
                         break;
                     }
 
                 }
-                result[w + h*camera.width] = gamma_correct(pixel_colour);
+                pixel_colour += partial_pixel_colour;
+
             }
+            result[w + h*camera.width] = gamma_correct(pixel_colour * rpp_factor);
         }
     }
 
-    write_ppm_from_array(result, camera.height, camera.width, "test.ppm");
+    write_ppm_from_array(result, camera.height, camera.width, argv[1]);
     free(result);
 }
