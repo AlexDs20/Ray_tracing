@@ -97,21 +97,25 @@ int main() {
 
     f32x3* result = (f32x3*)malloc(camera.width * camera.height * sizeof(f32x3));
 
-    const u32 N = 2;
+    const u32 N = 3;
     Sphere spheres[N];
     spheres[0] = {
-        {-0.5f, -0.1f, -2.5f},
+        {-0.5f, -0.1f, -3.5f},
         0.5f
     };
     spheres[1] = {
-        {0.5f, -0.1f,  -2.5f},
+        {0.5f, -0.1f,  -3.5f},
         0.5f
+    };
+    spheres[2] = {
+        {0.0f, -4.0f,  -3.5f},
+        3.5f
     };
 
     // const f32x3 background = {0.7f, 0.3f, 0.2f};
     const f32x3 background = {0.5f, 0.7f, 1.0f};
     const f32x3 sphere_colour = {0.2f, 0.3f, 0.6f};
-    const u32 max_depth = 5;
+    const u32 max_depth = 2;
 
     f32x3 w_dir = cross(camera.dir, camera.up);
     f32x3 h_dir = cross(w_dir, camera.dir);
@@ -162,27 +166,6 @@ int main() {
                         break;
                     }
 
-                }
-                result[w + h*camera.width] = gamma_correct(pixel_colour);
-            }
-
-
-            if (0) {
-                f32x3 pixel_colour;
-                f32 t = 0.0f;
-                for (u32 n=0; n<N; n++) {
-                    t = ray_sphere_intersect(ray, spheres[n]);
-
-                    if (t>1e-7f){
-                        f32x3 x_intersect = ray.O + t * ray.dir;
-                        f32x3 N = (spheres[n].O - x_intersect)/spheres[n].r;        // normalize(spheres[n].O - x_intersect); If x_intersect is good enough, just divide by sphere R
-                        pixel_colour = 0.5f * sphere_colour;
-                        break;
-                    }
-                }
-
-                if (t==0) {
-                    pixel_colour = background;
                 }
                 result[w + h*camera.width] = gamma_correct(pixel_colour);
             }
