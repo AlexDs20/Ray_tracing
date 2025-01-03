@@ -82,20 +82,47 @@ f32 random_in_range(f32 low, f32 high) {            // inclusive min and max
     return low + ((f32)rand() / RAND_MAX) * (high - low);
 }
 
-f32x3 random_vector_sphere() {
+f32x3 random_vector_on_unit_sphere() {
     while(true) {
-        f32 x = random_in_range(-0.5f, 0.5f);
-        f32 y = random_in_range(-0.5f, 0.5f);
-        f32 z = random_in_range(-0.5f, 0.5f);
+        f32 x = random_in_range(-1.0f, 1.0f);
+        f32 y = random_in_range(-1.0f, 1.0f);
+        f32 z = random_in_range(-1.0f, 1.0f);
         if (x*x+y*y+z*z <= 1.0f) return normalize({x, y, z});
     }
 }
 
+f32x3 random_vector_in_unit_sphere() {
+    while(true) {
+        f32 x = random_in_range(-1.0f, 1.0f);
+        f32 y = random_in_range(-1.0f, 1.0f);
+        f32 z = random_in_range(-1.0f, 1.0f);
+        if (x*x+y*y+z*z <= 1.0f) return {x, y, z};
+    }
+}
+
+enum Mat_type{
+    LAMBERTIAN,
+    METAL
+};
+
+struct Material {
+    Mat_type mat;
+    f32x3 colour;
+    f32 fuzziness = 0.0f;
+};
+
 
 int main(int argc, char** argv) {
-    // Camera camera = { 960, 540 };
-    Camera camera = { 1024, 576 };
+    Camera camera = { 960, 540 };
+    // Camera camera = { 1024, 576 };
     // Camera camera = { 1920, 1080 };
+
+    // const f32x3 background = {0.7f, 0.3f, 0.2f};
+    const f32x3 background = {1.0f, 1.0f, 1.0f};
+    // const f32x3 background = {0.5f, 0.7f, 1.0f};
+    const u32 max_depth = 5;
+    const u32 rays_per_pixel = 64;
+    const f32 rpp_factor = 1.0f / rays_per_pixel;
 
     f32x3* result = (f32x3*)malloc(camera.width * camera.height * sizeof(f32x3));
 
@@ -114,17 +141,20 @@ int main(int argc, char** argv) {
         3.5f
     };
 
-    f32x3 sphere_colours[3];
-    sphere_colours[0] = { 0.2f, 0.3f, 0.6f };
-    sphere_colours[1] = { 0.6f, 0.2f, 0.3f };
-    sphere_colours[2] = { 0.3f, 0.6f, 0.2f };
-
-    // const f32x3 background = {0.7f, 0.3f, 0.2f};
-    const f32x3 background = {1.0f, 1.0f, 1.0f};
-    // const f32x3 background = {0.5f, 0.7f, 1.0f};
-    const u32 max_depth = 4;
-    const u32 rays_per_pixel = 8;
-    const f32 rpp_factor = 1.0f / rays_per_pixel;
+    Material spheres_mat[3];
+    spheres_mat[0] = {
+        .mat = Mat_type::METAL,
+        .colour = { 0.2f, 0.3f, 0.6f },
+    };
+    spheres_mat[1] = {
+        .mat = Mat_type::LAMBERTIAN,
+        .colour = { 0.6f, 0.2f, 0.3f },
+    };
+    spheres_mat[2] = {
+        .mat = Mat_type::METAL,
+        .colour = { 0.3f, 0.6f, 0.2f },
+        .fuzziness = 0.1f,
+    };
 
     f32x3 w_dir = cross(camera.dir, camera.up);
     f32x3 h_dir = cross(w_dir, camera.dir);
@@ -171,16 +201,23 @@ int main(int argc, char** argv) {
                         f32x3 N = normalize((x_intersect - spheres[s].O));        // normalize(spheres[n].O - x_intersect); If x_intersect is good enough, just divide by sphere R
                         f32x3 random;
 
-                        if (1) {       // Lambertian
-                            random = normalize(N + random_vector_sphere());
+                        // Compute what to do with ray depending on the surface type
+                        if (spheres_mat[s].mat == Mat_type::LAMBERTIAN) {
+                            random = normalize(N + random_vector_on_unit_sphere());
+                        }  else if (spheres_mat[s].mat == Mat_type::METAL) {
+                            random = normalize(ray.dir - 2*dot(ray.dir, N)*N);
+                            if (spheres_mat[s].fuzziness > 0.0f) {
+                                f32x3 fuzz = spheres_mat[s].fuzziness * random_vector_in_unit_sphere();
+                                random = normalize( random + fuzz );
+                            }
                         } else {
-                            random = random_vector_sphere();
+                            random = random_vector_on_unit_sphere();
                             random = dot(random, N)>0 ? random : -random;
                         }
 
                         ray.O = x_intersect;
                         ray.dir = random;
-                        partial_pixel_colour *= sphere_colours[s];
+                        partial_pixel_colour *= spheres_mat[s].colour;
                     } else {
                         partial_pixel_colour *= background;
                         break;
