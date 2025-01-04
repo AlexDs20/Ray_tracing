@@ -15,8 +15,8 @@ struct Camera {
     f32 viewport_width = 1.0f;
     f32 aspect_ratio = 16.0f/9.0f;
 
-    f32x3 O = {0.0f, 5.0f, 5.0f};
-    f32x3 dir = normalize({0.0f, -0.6f, -1.0f});
+    f32x3 O = {0.0f, 1.0f, 5.0f};
+    f32x3 dir = normalize({0.0f, -0.1f, -1.0f});
     f32x3 up = {0.0f, 1.0f, 0.0f};
     f32 focal_length = 1.0f;
 };
@@ -100,15 +100,26 @@ f32x3 random_vector_in_unit_sphere() {
     }
 }
 
+namespace Refractive_Index {
+    const f32 AIR = 1.000293f;
+    const f32 DIAMOND = 2.4f;
+    const f32 GLASS = 1.6f;
+    const f32 WATER = 1.33333f;
+};
+
 enum Mat_type{
     LAMBERTIAN,
-    METAL
+    METAL,
+    DIELECTRIC
 };
 
 struct Material {
-    Mat_type mat;
-    f32x3 colour;
-    f32 fuzziness = 0.0f;
+    Mat_type mat = Mat_type::LAMBERTIAN;
+    f32x3 colour = {1.0f, 1.0f, 1.0f};
+    union {
+        f32 fuzziness;
+        f32 refractive_index = Refractive_Index::AIR;
+    };
 };
 
 
@@ -121,7 +132,7 @@ int main(int argc, char** argv) {
     const f32x3 background = {1.0f, 1.0f, 1.0f};
     // const f32x3 background = {0.5f, 0.7f, 1.0f};
     const u32 max_depth = 5;
-    const u32 rays_per_pixel = 64;
+    const u32 rays_per_pixel = 32;
     const f32 rpp_factor = 1.0f / rays_per_pixel;
 
     f32x3* result = (f32x3*)malloc(camera.width * camera.height * sizeof(f32x3));
@@ -129,22 +140,23 @@ int main(int argc, char** argv) {
     const u32 N = 3;
     Sphere spheres[N];
     spheres[0] = {
-        {-0.5f, -0.1f, -3.5f},
+        {-0.5f, 0.5f, -3.5f},
         0.5f
     };
     spheres[1] = {
-        {0.5f, -0.1f,  -3.5f},
+        {0.5f, 0.5f,  -3.5f},
         0.5f
     };
     spheres[2] = {
-        {0.0f, -4.0f,  -2.8f},
-        3.5f
+        {0.0f, -50.0f,  -3.5f},
+        50.0f
     };
 
     Material spheres_mat[3];
     spheres_mat[0] = {
         .mat = Mat_type::METAL,
         .colour = { 0.2f, 0.3f, 0.6f },
+        .fuzziness = 0.0f,
     };
     spheres_mat[1] = {
         .mat = Mat_type::LAMBERTIAN,
@@ -195,6 +207,7 @@ int main(int argc, char** argv) {
                             s = n;
                         }
                     }
+
                     if (s!=-1) {
                         // Create new ray
                         f32x3 x_intersect = ray.O + t * ray.dir;
