@@ -96,9 +96,6 @@ f32x3 normalize(f32x3 a) {
     f32 norm = length(a);
     return { a.x/norm, a.y/norm, a.z/norm };
 }
-f32x3 sqrt(f32x3 a) {
-    return { sqrt(a.x), sqrt(a.y), sqrt(a.z) };
-}
 f32x3& operator*=(f32x3& left, const f32x3 right) {
     left.x *= right.x;
     left.y *= right.y;
@@ -110,4 +107,14 @@ f32x3& operator+=(f32x3& left, const f32x3 right) {
     left.y += right.y;
     left.z += right.z;
     return left;
+}
+f32x3 sqrt(f32x3 a) {
+    return { sqrt(a.x), sqrt(a.y), sqrt(a.z) };
+}
+f32x3 pow(f32x3 a, f32 power) {
+    return {
+        pow(a.x, power),
+        pow(a.y, power),
+        pow(a.z, power),
+    };
 }

@@ -15,8 +15,9 @@ struct Camera {
     f32 viewport_width = 1.0f;
     f32 aspect_ratio = 16.0f/9.0f;
 
-    f32x3 O = {0.0f, 1.0f, 5.0f};
-    f32x3 dir = normalize({0.0f, -0.1f, -1.0f});
+    f32x3 O = {0.0f, 1.2f, 6.0f};
+    f32x3 lookAt = {0.0f, 1.0f, 0.0f};
+    f32x3 dir = normalize(lookAt - O);
     f32x3 up = {0.0f, 1.0f, 0.0f};
     f32 focal_length = 1.0f;
 };
@@ -73,9 +74,11 @@ f32 ray_sphere_intersect(Ray& ray, Sphere& sphere){
     return t;
 }
 
-inline f32x3 gamma_correct(f32x3 colour) {
-    // return colour;
-    return sqrt(colour);
+inline f32x3 gamma_correct(f32x3 colour, f32 gamma=2.0f) {
+    if (gamma == 2.0f) {
+        return sqrt(colour);
+    }
+    return pow(colour, 1.0f/gamma);
 }
 
 f32 random_in_range(f32 low, f32 high) {            // inclusive min and max
@@ -114,7 +117,7 @@ enum Mat_type{
 };
 
 struct Material {
-    Mat_type mat = Mat_type::LAMBERTIAN;
+    Mat_type type = Mat_type::LAMBERTIAN;
     f32x3 colour = {1.0f, 1.0f, 1.0f};
     union {
         f32 fuzziness;
@@ -125,47 +128,52 @@ struct Material {
 
 int main(int argc, char** argv) {
     Camera camera = { 960, 540 };
-    // Camera camera = { 1024, 576 };
     // Camera camera = { 1920, 1080 };
 
-    // const f32x3 background = {0.7f, 0.3f, 0.2f};
     const f32x3 background = {1.0f, 1.0f, 1.0f};
-    // const f32x3 background = {0.5f, 0.7f, 1.0f};
     const u32 max_depth = 5;
     const u32 rays_per_pixel = 32;
     const f32 rpp_factor = 1.0f / rays_per_pixel;
 
     f32x3* result = (f32x3*)malloc(camera.width * camera.height * sizeof(f32x3));
 
-    const u32 N = 3;
+    const u32 N = 4;
     Sphere spheres[N];
     spheres[0] = {
-        {-0.5f, 0.5f, -3.5f},
+        {-0.5f, 0.5f, 0.0f},
         0.5f
     };
     spheres[1] = {
-        {0.5f, 0.5f,  -3.5f},
+        {0.5f, 0.5f, 0.0f},
         0.5f
     };
     spheres[2] = {
-        {0.0f, -50.0f,  -3.5f},
+        {0.0f, 1.15f, 1.2f},
+        0.5f
+    };
+    spheres[3] = {
+        {0.0f, -50.0f, 0.0f},
         50.0f
     };
 
-    Material spheres_mat[3];
-    spheres_mat[0] = {
-        .mat = Mat_type::METAL,
+    Material mat[N];
+    mat[0] = {
+        .type = Mat_type::METAL,
         .colour = { 0.2f, 0.3f, 0.6f },
         .fuzziness = 0.0f,
     };
-    spheres_mat[1] = {
-        .mat = Mat_type::LAMBERTIAN,
+    mat[1] = {
+        .type = Mat_type::LAMBERTIAN,
         .colour = { 0.6f, 0.2f, 0.3f },
     };
-    spheres_mat[2] = {
-        .mat = Mat_type::METAL,
-        .colour = { 0.3f, 0.6f, 0.2f },
-        .fuzziness = 0.1f,
+    mat[2] = {
+        .type = Mat_type::DIELECTRIC,
+        .colour = { 1.0f,  1.0f,  1.0 },
+        .refractive_index = 0.1f,
+    };
+    mat[3] = {
+        .type = Mat_type::LAMBERTIAN,
+        .colour = { 0.1f, 0.7f, 0.1f },
     };
 
     f32x3 w_dir = cross(camera.dir, camera.up);
@@ -201,7 +209,6 @@ int main(int argc, char** argv) {
                     int s = -1;
                     for (u32 n=0; n<N; n++) {
                         f32 tmp = ray_sphere_intersect(ray, spheres[n]);
-                        // TODO(alex): Do not break, keep going but only keep what is closest!
                         if ((tmp>1e-7f) && (tmp < t)){
                             t = tmp;
                             s = n;
@@ -215,14 +222,18 @@ int main(int argc, char** argv) {
                         f32x3 random;
 
                         // Compute what to do with ray depending on the surface type
-                        if (spheres_mat[s].mat == Mat_type::LAMBERTIAN) {
+                        if (mat[s].type == Mat_type::LAMBERTIAN) {
                             random = normalize(N + random_vector_on_unit_sphere());
-                        }  else if (spheres_mat[s].mat == Mat_type::METAL) {
+
+                        }  else if (mat[s].type == Mat_type::METAL) {
                             random = normalize(ray.dir - 2*dot(ray.dir, N)*N);
-                            if (spheres_mat[s].fuzziness > 0.0f) {
-                                f32x3 fuzz = spheres_mat[s].fuzziness * random_vector_in_unit_sphere();
+                            if (mat[s].fuzziness > 0.0f) {
+                                f32x3 fuzz = mat[s].fuzziness * random_vector_in_unit_sphere();
                                 random = normalize( random + fuzz );
                             }
+
+                        } else if (mat[s].type == Mat_type::DIELECTRIC) {
+                            random = normalize(ray.dir - 2*dot(ray.dir, N)*N);
                         } else {
                             random = random_vector_on_unit_sphere();
                             random = dot(random, N)>0 ? random : -random;
@@ -230,7 +241,7 @@ int main(int argc, char** argv) {
 
                         ray.O = x_intersect;
                         ray.dir = random;
-                        partial_pixel_colour *= spheres_mat[s].colour;
+                        partial_pixel_colour *= mat[s].colour;
                     } else {
                         partial_pixel_colour *= background;
                         break;
