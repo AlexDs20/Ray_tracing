@@ -2,6 +2,14 @@
 #include <cstdint>
 #include <math.h>
 
+typedef char unsigned u8;
+typedef short unsigned u16;
+typedef int unsigned u32;
+
+typedef char s8;
+typedef short s16;
+typedef int s32;
+
 typedef float f32;
 typedef double f64;
 
@@ -29,17 +37,17 @@ struct f32x4 {
     };
 };
 
-typedef uint32_t u32;
-typedef uint8_t u8;
-
-struct u32x3 {
-    union {
-        u32 data[3];
-        struct {
-            u32 x, y, z;
-        };
-    };
-};
+// typedef uint32_t u32;
+// typedef uint8_t u8;
+//
+// struct u32x3 {
+//     union {
+//         u32 data[3];
+//         struct {
+//             u32 x, y, z;
+//         };
+//     };
+// };
 
 
 f32x3 cross(const f32x3 a, const f32x3 b) {

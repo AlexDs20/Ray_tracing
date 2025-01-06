@@ -8,7 +8,8 @@
 
 #include "types.h"
 
-#define EPS 1e-5f
+#define EPS 1e-4f
+
 
 struct Camera {
     u32 width;
@@ -24,14 +25,46 @@ struct Camera {
     f32 focal_length = 1.0f;
 };
 
+namespace Refractive_Index {
+    const f32 AIR = 1.000293f;
+    const f32 DIAMOND = 2.4f;
+    const f32 GLASS = 1.6f;
+    const f32 WATER = 1.33333f;
+};
+
+enum Mat_type{
+    LAMBERTIAN,
+    METAL,
+    DIELECTRIC
+};
+
+struct Material {
+    Mat_type type = Mat_type::LAMBERTIAN;
+    f32x3 colour = {1.0f, 1.0f, 1.0f};
+    union {
+        f32 fuzziness;
+        f32 refractive_index;
+    };
+};
+
 struct Ray {
     f32x3 O;
     f32x3 dir;
+    // f32 refrective_index;
 };
 
 struct Sphere {
     f32x3 O;
     f32 r;
+    u32 material_index;
+};
+
+struct World {
+    u32 sphere_count;
+    Sphere* spheres;
+
+    u32 material_count;
+    Material* materials;
 };
 
 void write_ppm_from_array(const f32x3* data, const u32 height, const u32 width, const char* filepath) {
@@ -57,7 +90,7 @@ f32 clamp(f32 x, f32 minimum, f32 maximum) {
     return x;
 }
 
-f32 ray_sphere_intersect(Ray& ray, Sphere& sphere){
+f32 ray_sphere_intersect(Ray& ray, Sphere& sphere) {
     const f32x3 C = sphere.O;
     const f32x3 O = ray.O;
     const f32x3 OC = C-O;
@@ -72,10 +105,12 @@ f32 ray_sphere_intersect(Ray& ray, Sphere& sphere){
     }
 
     f32 t = (half_b - sqrt(delta))/a;
-    if (abs(t) < EPS) {
-        t = (half_b + sqrt(delta))/a;
+
+    if (abs(t) > EPS) {
+        return t;
     }
 
+    t = (half_b + sqrt(delta))/a;
     return t;
 }
 
@@ -108,28 +143,6 @@ f32x3 random_vector_in_unit_sphere() {
     }
 }
 
-namespace Refractive_Index {
-    const f32 AIR = 1.000293f;
-    const f32 DIAMOND = 2.4f;
-    const f32 GLASS = 1.6f;
-    const f32 WATER = 1.33333f;
-};
-
-enum Mat_type{
-    LAMBERTIAN,
-    METAL,
-    DIELECTRIC
-};
-
-struct Material {
-    Mat_type type = Mat_type::LAMBERTIAN;
-    f32x3 colour = {1.0f, 1.0f, 1.0f};
-    union {
-        f32 fuzziness;
-        f32 refractive_index = Refractive_Index::AIR;
-    };
-};
-
 f32
 reflectance(f32 cos_theta, f32 refractive_index) {
     f32 r0 = (1 - refractive_index) / (1 + refractive_index);
@@ -138,25 +151,28 @@ reflectance(f32 cos_theta, f32 refractive_index) {
 }
 
 inline f32x3
-cast_ray(Ray ray, Sphere* spheres, Material* mat, u32 n_spheres, u32 max_depth) {
+cast_ray(Ray& ray, World* world, u32 max_depth) {
+    Sphere* spheres = world->spheres;
+    u32 n_spheres = world->sphere_count;
+    Material* materials = world->materials;
+
     f32x3 out_colour = { 1.0f,  1.0f,  1.0f };
 
     for (u32 depth=0; depth<max_depth; depth++) {
 
         f32 t = FLT_MAX;
-
         int s = -1;
-        for (u32 n=0; n<n_spheres; n++) {
-            f32 tmp = ray_sphere_intersect(ray, spheres[n]);
+
+        for (u32 i=0; i<n_spheres; i++) {
+            f32 tmp = ray_sphere_intersect(ray, spheres[i]);
             if ((tmp>0.0f) && (tmp < t)){
                 t = tmp;
-                s = n;
+                s = i;
             }
         }
 
         if (s == -1) {
-            const f32x3 background = {1.0f, 1.0f, 1.0f};
-            out_colour *= background;
+            out_colour *= materials[0].colour;
             break;
         }
         if (depth == max_depth-1) {
@@ -164,28 +180,30 @@ cast_ray(Ray ray, Sphere* spheres, Material* mat, u32 n_spheres, u32 max_depth) 
             break;
         }
 
+        // If träff sfär and not last depth
         {
             // Get info at intersection point
             f32x3 x_intersect = ray.O + t * ray.dir;
-            f32x3 N = normalize((x_intersect - spheres[s].O));        // normalize(spheres[n].O - x_intersect); If x_intersect is good enough, just divide by sphere R
-            f32x3 colour = mat[s].colour;
+            f32x3 N = (x_intersect - spheres[s].O)/spheres[s].r;
+            const Material& mat = materials[spheres[s].material_index];
+            f32x3 colour = mat.colour;
             f32x3 new_dir;
 
             // Compute what to do with ray depending on the surface type
-            if (mat[s].type == Mat_type::LAMBERTIAN) {
+            if (mat.type == Mat_type::LAMBERTIAN) {
                 new_dir = normalize(N + random_vector_on_unit_sphere());
 
-            }  else if (mat[s].type == Mat_type::METAL) {
+            }  else if (mat.type == Mat_type::METAL) {
                 new_dir = normalize(ray.dir - 2*dot(ray.dir, N)*N);
-                if (mat[s].fuzziness > 0.0f) {
-                    f32x3 fuzz = mat[s].fuzziness * random_vector_in_unit_sphere();
+                if (mat.fuzziness > 0.0f) {
+                    f32x3 fuzz = mat.fuzziness * random_vector_in_unit_sphere();
                     new_dir = normalize( new_dir + fuzz );
                 }
 
-            } else if (mat[s].type == Mat_type::DIELECTRIC) {
+            } else if (mat.type == Mat_type::DIELECTRIC) {
 
                 // TODO(alex): change to use the curren ray's environment refractive index
-                f32 ri = dot(ray.dir, N) < 0 ? Refractive_Index::AIR/mat[s].refractive_index : mat[s].refractive_index;
+                f32 ri = dot(ray.dir, N) < 0 ? Refractive_Index::AIR/mat.refractive_index : mat.refractive_index;
                 N = dot(ray.dir, N) > 0 ? -N : N;
                 f32 cos_theta = -dot(ray.dir, N);
                 f32 sin_theta = sqrt(1.0f - cos_theta*cos_theta);
@@ -195,8 +213,10 @@ cast_ray(Ray ray, Sphere* spheres, Material* mat, u32 n_spheres, u32 max_depth) 
                 } else {
                     colour = {1.0f, 1.0f, 1.0f};
                     f32x3 out_perp = ri * (ray.dir + cos_theta * N);
-                    f32x3 out_para = -sqrt(1.0f-length2(out_perp))*N;
-                    new_dir = out_perp + out_para;
+                    f32x3 out_para = -sqrt(1.0f-fmin(1.0f, length2(out_perp)))*N;
+                    new_dir = normalize(out_perp + out_para);
+
+                    // new_dir = ri * ray.dir + (ri*cos_theta - sqrt(1.0f - ri*ri * (1-cos_theta*cos_theta)))*N;
                 }
 
             }
@@ -211,54 +231,63 @@ cast_ray(Ray ray, Sphere* spheres, Material* mat, u32 n_spheres, u32 max_depth) 
 
 
 int main(int argc, char** argv) {
-    // Camera camera = { 960, 540 };
-    Camera camera = { 1920, 1080 };
+    // Camera camera = { 624, 351 };
+    Camera camera = { 1024, 576 };
+    // Camera camera = { 1920, 1080 };
 
-    const f32x3 background = {1.0f, 1.0f, 1.0f};
-    const u32 max_depth = 10;
-    const u32 rays_per_pixel = 8;
+    const u32 max_depth = 8;
+    const u32 rays_per_pixel = 32;
     const f32 rpp_factor = 1.0f / rays_per_pixel;
 
     f32x3* result = (f32x3*)malloc(camera.width * camera.height * sizeof(f32x3));
 
-    const u32 N = 4;
-    Sphere spheres[N];
-    spheres[0] = {
-        {-0.5f, 0.5f, 0.0f},
-        0.5f
-    };
-    spheres[1] = {
-        {0.5f, 0.5f, 0.0f},
-        0.5f
-    };
-    spheres[2] = {
-        {0.0f, 1.15f, 1.2f},
-        0.5f
-    };
-    spheres[3] = {
-        {0.0f, -50.0f, 0.0f},
-        50.0f
-    };
+    Material mat[6] = {};
+    {
+        mat[0].type = Mat_type::LAMBERTIAN;
+        mat[0].colour = { 0.3f,  0.3f,  0.7f };
 
-    Material mat[N];
-    mat[0] = {
-        .type = Mat_type::METAL,
-        .colour = { 0.2f, 0.3f, 0.6f },
-        .fuzziness = 0.0f,
-    };
-    mat[1] = {
-        .type = Mat_type::LAMBERTIAN,
-        .colour = { 0.6f, 0.2f, 0.3f },
-    };
-    mat[2] = {
-        .type = Mat_type::DIELECTRIC,
-        .colour = { 1.0f,  1.0f,  0.0 },
-        .refractive_index = Refractive_Index::GLASS,
-    };
-    mat[3] = {
-        .type = Mat_type::LAMBERTIAN,
-        .colour = { 0.1f, 0.7f, 0.1f },
-    };
+        mat[1].type = Mat_type::LAMBERTIAN;
+        mat[1].colour = { 0.7f,  0.3f,  0.7f };
+
+        mat[2].type = Mat_type::METAL;
+        mat[2].colour = { 0.6f, 0.2f, 0.3f };
+
+        mat[3].type = Mat_type::METAL;
+        mat[3].colour = { 0.6f, 0.2f, 0.3f };
+        mat[3].fuzziness = 0.1f;
+
+        mat[4].type = Mat_type::DIELECTRIC;
+        mat[4].colour = { 0.2f, 0.3f, 0.6f };
+        mat[4].refractive_index = Refractive_Index::GLASS;
+
+        mat[5].type = Mat_type::LAMBERTIAN;
+        mat[5].colour = { 0.1f,  0.3f,  0.6f };
+    }
+
+    Sphere spheres[4] = {};
+    {
+        spheres[0].O = {0.0f, -50.0f, 0.0f};
+        spheres[0].r = 50.0f;
+        spheres[0].material_index = 1;
+
+        spheres[1].O = {-0.5f, 0.5f, 0.0f};
+        spheres[1].r = 0.5f;
+        spheres[1].material_index = 2;
+
+        spheres[2].O = {0.0f, 1.15f, 1.2f};
+        spheres[2].r = 0.5f;
+        spheres[2].material_index = 5;
+
+        spheres[3].O = {0.5f, 0.5f, 0.0f};
+        spheres[3].r = 0.5f;
+        spheres[2].material_index = 4;
+    }
+
+    World world = {};
+    world.sphere_count = 4;
+    world.spheres = spheres;
+    world.material_count = 6;
+    world.materials = mat;
 
     f32x3 w_dir = cross(camera.dir, camera.up);
     f32x3 h_dir = cross(w_dir, camera.dir);
@@ -279,12 +308,10 @@ int main(int argc, char** argv) {
                 f32 w_shift = -half_width  + ((f32)w+random_in_range(0.0f, 1.0f)) * res;
                 f32 h_shift =  half_height - ((f32)h+random_in_range(0.0f, 1.0f)) * res;
 
-                // TODO(alex): Computation of pixel pos are probably not fully correct...
                 f32x3 pixel_pos = viewport_center + w_shift * w_dir + h_shift*h_dir;
-
                 Ray ray = { camera.O, normalize(pixel_pos - camera.O) };
 
-                f32x3 partial_pixel_colour = cast_ray(ray, spheres, mat, N, max_depth);
+                f32x3 partial_pixel_colour = cast_ray(ray, &world, max_depth);
 
                 pixel_colour += partial_pixel_colour;
 
