@@ -2,6 +2,8 @@
 #include <cstdint>
 #include <math.h>
 
+#define EPS 1e-5f
+
 typedef char unsigned u8;
 typedef short unsigned u16;
 typedef int unsigned u32;
@@ -12,6 +14,18 @@ typedef int s32;
 
 typedef float f32;
 typedef double f64;
+
+struct u8x3 {
+    union {
+        u8 data[3];
+        struct {
+            u8 x, y, z;
+        };
+        struct {
+            u8 r, g, b;
+        };
+    };
+};
 
 struct f32x3 {
     union {
@@ -124,5 +138,21 @@ f32x3 pow(f32x3 a, f32 power) {
         pow(a.x, power),
         pow(a.y, power),
         pow(a.z, power),
+    };
+}
+
+f32x3 f32x3min(const f32x3& left, const f32x3& right ) {
+    return {
+        fminf(left.x, right.x),
+        fminf(left.y, right.y),
+        fminf(left.z, right.z),
+    };
+}
+
+f32x3 f32x3max(const f32x3& left, const f32x3& right ) {
+    return {
+        fmaxf(left.x, right.x),
+        fmaxf(left.y, right.y),
+        fmaxf(left.z, right.z),
     };
 }
