@@ -78,11 +78,10 @@ AABB aabb_segment(const Segment& s) {
 
 struct BVHNode {
     AABB bbox = {.low={FLT_MAX, FLT_MAX, FLT_MAX}, .high={-FLT_MAX, -FLT_MAX, -FLT_MAX}};
-    BVHNode* left;
-    BVHNode* right;
-    bool is_leaf;
-    Sphere* objects;
-    u32 N;
+    u32 leftIndex;
+    u32 rightIndex;
+    u32 startObjects;
+    u32 nObjects;
 };
 
 void print(f32x3 v) {
@@ -92,6 +91,22 @@ void print(f32x3 v) {
 void print(f32 v) {
     printf("%.5f\n", v);
 }
+
+void print(){
+    printf("======================\n");
+};
+
+void print(BVHNode* node, u32 nodes_used=-1) {
+    printf(
+        "node_used: %d\nleftIdx: %d\nrightIdx: %d\nstartObj: %d\nnObjects: %d\n",
+        nodes_used,
+        node->leftIndex,
+        node->rightIndex,
+        node->startObjects,
+        node->nObjects
+    );
+}
+
 
 AABB create_aabb_from_objects(Sphere* objects, u32 N) {
     AABB bbox;
@@ -106,8 +121,9 @@ AABB create_aabb_from_objects(Sphere* objects, u32 N) {
 }
 
 
-void split_node(BVHNode* tree, BVHNode* node, Sphere* objects, u32 N, u32& nodes_used) {
-    if (N<=1) return;
+void split_node(BVHNode* tree, BVHNode* node, Sphere* objects, u32& nodes_used) {
+    if (node->nObjects<=1) return;
+
     // Get axis to split bbox
     AABB& bbox = node->bbox;
     f32x3 size = bbox.high - bbox.low;
@@ -116,8 +132,9 @@ void split_node(BVHNode* tree, BVHNode* node, Sphere* objects, u32 N, u32& nodes
     f32 split = bbox.low.data[axis] + size.data[axis] * 0.5f;
 
     // Sort the objects between either sides of bbox
-    u32 j = N-1;
-    u32 i = 0;
+    u32 i = node->startObjects;
+    u32 j = i + node->nObjects - 1;
+
     Sphere tmp;
     while (i<=j) {
         if (objects[i].O.data[axis] < split) {
@@ -131,32 +148,48 @@ void split_node(BVHNode* tree, BVHNode* node, Sphere* objects, u32 N, u32& nodes
         }
     }
 
+    if (i==node->startObjects || i==node->startObjects+node->nObjects) {
+        return;
+    }
 
-    node->left = &tree[nodes_used++];
-    node->left->bbox = create_aabb_from_objects(&objects[0], i);
-    node->left->objects = &objects[0];
-    node->left->N = i;
+    // Assign the leaves and reset the associated objects then
+    node->leftIndex = nodes_used++;
+    node->rightIndex = nodes_used++;
 
-    node->right = &tree[nodes_used++];
-    node->right->bbox = create_aabb_from_objects(&objects[i], N-i);
-    node->right->objects = &objects[i];
-    node->right->N = N-i;
+    // Create the nodes
+    BVHNode* leftNode = &tree[node->leftIndex];
+    BVHNode* rightNode = &tree[node->rightIndex];
 
-    split_node(tree, node->left, node->left->objects, node->left->N, nodes_used);
-    split_node(tree, node->right, node->right->objects, node->right->N, nodes_used);
+    leftNode->startObjects = node->startObjects;
+    leftNode->nObjects = i - node->startObjects;
+
+    rightNode->startObjects = i;
+    rightNode->nObjects = node->nObjects - leftNode->nObjects;
+
+    leftNode->bbox = create_aabb_from_objects(&objects[leftNode->startObjects], leftNode->nObjects);
+    rightNode->bbox = create_aabb_from_objects(&objects[rightNode->startObjects], rightNode->nObjects);
+
+    split_node(tree, leftNode, objects, nodes_used);
+    split_node(tree, rightNode, objects, nodes_used);
+
+    node->startObjects = 0;
+    node->nObjects = 0;
 }
 
 
 void create_bvh_hierarchy(BVHNode* tree, Sphere* objects, u32 N) {
-    BVHNode* node = &tree[0];
+    u32 root_node = 0;
+    BVHNode* node = &tree[root_node];
     u32 nodes_used = 1;
 
     // Get BBOX of objects
     node->bbox = create_aabb_from_objects(objects, N);
-    AABB& bbox = node->bbox;
 
-    node->objects = objects;
-    node->N = N;
+    node->leftIndex = 0;
+    node->rightIndex = 0;
 
-    split_node(tree, node, node->objects, node->N, nodes_used);
+    node->startObjects = 0;
+    node->nObjects = N;
+
+    split_node(tree, node, objects, nodes_used);
 }
