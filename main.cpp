@@ -11,7 +11,7 @@
 
 
 struct Camera {
-    f32x3 O = {0.5f, 3.0f, 7.0f};
+    f32x3 O = {5.0f, 2.0f, 13.0f};
     f32x3 lookAt = {0.0f, 0.0f, 0.0f};
     f32x3 dir = normalize(lookAt-O);
     f32x3 up = {0.0f, 1.0f, 0.0f};
@@ -222,7 +222,7 @@ void second_scene(const char* filepath) {
     AllocateImage(image.width, image.height);
 
     const u32 max_depth = 32;
-    const u32 rays_per_pixel = 8;
+    const u32 rays_per_pixel = 16;
     const f32 rpp_factor = 1.0f / rays_per_pixel;
 
     Camera camera;
@@ -232,9 +232,17 @@ void second_scene(const char* filepath) {
     camera.w_dir = cross(camera.dir, camera.up);
     camera.h_dir = cross(camera.w_dir, camera.dir);
 
-    const u32 n_spheres = 6;
+    const u32 n_spheres = 10;
     Sphere spheres[n_spheres] = {};
-    if (1){
+    for (u32 i=0; i<n_spheres; i++) {
+        spheres[i].O = {
+            random_in_range(-4.0f, 4.0f),
+            random_in_range(-4.0f, 4.0f),
+            random_in_range(-4.0f, 4.0f),
+        };
+        spheres[i].r = random_in_range(0.05f, 0.5f);
+    }
+    if (0){
         spheres[0].O = {0.0f, 0.0f, 0.0f};
         spheres[0].r = 0.2f;
 
