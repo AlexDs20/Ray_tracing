@@ -145,16 +145,7 @@ f32x3 HadamardDivision(f32x3 num, f32x3 denum) {
     return { num.x/denum.x, num.y/denum.y, num.z/denum.z };
 };
 
-f32 f32min(f32 a, f32 b) {
-    return a<b ? a : b;
-}
-
-f32 f32max(f32 a, f32 b) {
-    return a>b ? a : b;
-}
-
-
-f32x3 f32x3min(const f32x3& left, const f32x3& right ) {
+f32x3 HadamardMin(const f32x3& left, const f32x3& right ) {
     return {
         fminf(left.x, right.x),
         fminf(left.y, right.y),
@@ -162,10 +153,18 @@ f32x3 f32x3min(const f32x3& left, const f32x3& right ) {
     };
 }
 
-f32x3 f32x3max(const f32x3& left, const f32x3& right ) {
+f32x3 HadamardMax(const f32x3& left, const f32x3& right ) {
     return {
         fmaxf(left.x, right.x),
         fmaxf(left.y, right.y),
         fmaxf(left.z, right.z),
     };
+}
+
+f32 f32min(f32 a, f32 b) {
+    return a<b ? a : b;
+}
+
+f32 f32max(f32 a, f32 b) {
+    return a>b ? a : b;
 }

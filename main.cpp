@@ -296,7 +296,7 @@ void second_scene(const char* filepath) {
 
                 int idx_seg = -1;
 
-                f32 tmp = ray_aabb_intersect(ray, bvhnode[0].bbox);
+                f32 tmp = ray_aabb_intersect(ray, bvhnode[4].bbox);
                 if ((tmp>0.0f) && (tmp < t)){
                     t = tmp;
                     idx_seg = 1;

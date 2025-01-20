@@ -49,8 +49,8 @@ void create_segments_from_aabb(Segment* segments, const AABB& aabb) {
 AABB aabb_triangle(const Triangle& tri) {
     AABB aabb;
 
-    aabb.low = f32x3min(tri.a, f32x3min(tri.b, tri.c));
-    aabb.high = f32x3max(tri.a, f32x3max(tri.b, tri.c));
+    aabb.low = HadamardMin(tri.a, HadamardMin(tri.b, tri.c));
+    aabb.high = HadamardMax(tri.a, HadamardMax(tri.b, tri.c));
 
     return aabb;
 }
@@ -69,8 +69,8 @@ AABB aabb_sphere(const Sphere& s) {
 AABB aabb_segment(const Segment& s) {
     AABB aabb;
 
-    aabb.low = f32x3min(s.a, s.b);
-    aabb.high = f32x3max(s.a, s.b);
+    aabb.low = HadamardMin(s.a, s.b);
+    aabb.high = HadamardMax(s.a, s.b);
 
     return aabb;
 }
@@ -113,8 +113,8 @@ AABB create_aabb_from_objects(Sphere* objects, u32 N) {
     bbox.low = {FLT_MAX, FLT_MAX, FLT_MAX};
     bbox.high = {-FLT_MAX, -FLT_MAX, -FLT_MAX};
     for (u32 i=0; i<N; i++) {
-        bbox.low = f32x3min(bbox.low, objects[i].O - objects[i].r);
-        bbox.high = f32x3max(bbox.high, objects[i].O + objects[i].r);
+        bbox.low = HadamardMin(bbox.low, objects[i].O - objects[i].r);
+        bbox.high = HadamardMax(bbox.high, objects[i].O + objects[i].r);
     }
 
     return bbox;

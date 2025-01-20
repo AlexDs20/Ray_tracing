@@ -84,8 +84,8 @@ f32 ray_aabb_intersect(const Ray& ray, const AABB& aabb) {
     f32x3 t1 = HadamardDivision(aabb.low - ray.O, ray.dir);
     f32x3 t2 = HadamardDivision(aabb.high - ray.O, ray.dir);
 
-    f32x3 t_in = f32x3min(t1, t2);
-    f32x3 t_out = f32x3max(t1, t2);
+    f32x3 t_in = HadamardMin(t1, t2);
+    f32x3 t_out = HadamardMax(t1, t2);
 
     f32 t_exit = f32min(t_out.z, f32min(t_out.x, t_out.y));
     f32 t_entry = f32max(t_in.z, f32max(t_in.x, t_in.y));
