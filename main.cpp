@@ -11,7 +11,7 @@
 
 
 struct Camera {
-    f32x3 O = {5.0f, 2.0f, 13.0f};
+    f32x3 O = {7.0f, 2.0f, 15.0f};
     f32x3 lookAt = {0.0f, 0.0f, 0.0f};
     f32x3 dir = normalize(lookAt-O);
     f32x3 up = {0.0f, 1.0f, 0.0f};
@@ -222,7 +222,7 @@ void second_scene(const char* filepath) {
     AllocateImage(image.width, image.height);
 
     const u32 max_depth = 32;
-    const u32 rays_per_pixel = 16;
+    const u32 rays_per_pixel = 1;
     const f32 rpp_factor = 1.0f / rays_per_pixel;
 
     Camera camera;
@@ -232,7 +232,7 @@ void second_scene(const char* filepath) {
     camera.w_dir = cross(camera.dir, camera.up);
     camera.h_dir = cross(camera.w_dir, camera.dir);
 
-    const u32 n_spheres = 10;
+    const u32 n_spheres = 50;
     Sphere spheres[n_spheres] = {};
     for (u32 i=0; i<n_spheres; i++) {
         spheres[i].O = {
@@ -296,19 +296,25 @@ void second_scene(const char* filepath) {
 
                 int idx_seg = -1;
 
-                // n_nodes = 3;
-                for (u32 i=0; i<n_nodes; i++) {
-                    Segment segments[12];
-                    create_segments_from_aabb(segments, bvhnode[i].bbox);
-
-                    for (u32 i=0; i<12; i++) {
-                        f32 tmp = ray_segment_intersect(ray, segments[i]);
-                        if ((tmp>0.0f) && (tmp < t)){
-                            t = tmp;
-                            idx_seg = i;
-                        }
-                    }
+                f32 tmp = ray_aabb_intersect(ray, bvhnode[0].bbox);
+                if ((tmp>0.0f) && (tmp < t)){
+                    t = tmp;
+                    idx_seg = 1;
                 }
+
+                // n_nodes = 3;
+                // for (u32 i=0; i<n_nodes; i++) {
+                //     Segment segments[12];
+                //     create_segments_from_aabb(segments, bvhnode[i].bbox);
+
+                //     for (u32 i=0; i<12; i++) {
+                //         f32 tmp = ray_segment_intersect(ray, segments[i]);
+                //         if ((tmp>0.0f) && (tmp < t)){
+                //             t = tmp;
+                //             idx_seg = i;
+                //         }
+                //     }
+                // }
 
                 f32x3 partial_pixel_colour;
                 if (idx_seg != -1) {

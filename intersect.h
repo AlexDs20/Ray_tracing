@@ -1,8 +1,9 @@
 #pragma once
+#include <math.h>
 #include "types.h"
 #include "object.h"
 
-f32 ray_sphere_intersect(Ray& ray, Sphere& sphere) {
+f32 ray_sphere_intersect(const Ray& ray, const Sphere& sphere) {
     f32x3 C = sphere.O;
     f32x3 O = ray.O;
     f32x3 OC = C-O;
@@ -26,7 +27,7 @@ f32 ray_sphere_intersect(Ray& ray, Sphere& sphere) {
     return t;
 }
 
-f32 ray_segment_intersect(Ray& ray, Segment& segment) {
+f32 ray_segment_intersect(const Ray& ray, const Segment& segment) {
     // referens: https://mathworld.wolfram.com/Line-LineIntersection.html
     f32x3 a = segment.b - segment.a;
     const f32x3& b = ray.dir;
@@ -47,7 +48,7 @@ f32 ray_segment_intersect(Ray& ray, Segment& segment) {
     return 0.0f;
 }
 
-f32 ray_triangles_intersect(Ray& ray, Triangle& triangle) {
+f32 ray_triangles_intersect(const Ray& ray, const Triangle& triangle) {
     const f32x3 edge1 = triangle.b - triangle.a;
     const f32x3 edge2 = triangle.c - triangle.a;
     const f32x3 h = cross( ray.dir, edge2 );
@@ -77,4 +78,17 @@ f32 ray_triangles_intersect(Ray& ray, Triangle& triangle) {
     }
 
     return 0.0f;
+}
+
+f32 ray_aabb_intersect(const Ray& ray, const AABB& aabb) {
+    f32x3 t1 = HadamardDivision(aabb.low - ray.O, ray.dir);
+    f32x3 t2 = HadamardDivision(aabb.high - ray.O, ray.dir);
+
+    f32x3 t_in = f32x3min(t1, t2);
+    f32x3 t_out = f32x3max(t1, t2);
+
+    f32 t_exit = f32min(t_out.z, f32min(t_out.x, t_out.y));
+    f32 t_entry = f32max(t_in.z, f32max(t_in.x, t_in.y));
+
+    return t_entry < t_exit ? t_entry : 0.0f;
 }
