@@ -1,8 +1,9 @@
 #pragma once
+#include <stdio.h>
 #include <float.h>
 #include "types.h"
 #include "object.h"
-#include "stdio.h"
+#include "intersect.h"
 
 
 void create_segments_from_aabb(Segment* segments, const AABB& aabb) {
@@ -148,9 +149,11 @@ void split_node(BVHNode* tree, BVHNode* node, Sphere* objects, u32& nodes_used) 
 
     leftNode->startObjects = node->startObjects;
     leftNode->nObjects = i - node->startObjects;
+    leftNode->leftIndex = 0;
 
     rightNode->startObjects = i;
     rightNode->nObjects = node->nObjects - leftNode->nObjects;
+    rightNode->leftIndex = 0;
 
     leftNode->bbox = create_aabb_from_objects(&objects[leftNode->startObjects], leftNode->nObjects);
     rightNode->bbox = create_aabb_from_objects(&objects[rightNode->startObjects], rightNode->nObjects);
@@ -177,4 +180,28 @@ void create_bvh_hierarchy(BVHNode* tree, Sphere* objects, u32 N) {
     node->nObjects = N;
 
     split_node(tree, node, objects, nodes_used);
+}
+
+void traverse_bvh_hierarchy(const Ray& ray, BVHNode* tree, u32 nodeIdx, const Sphere* objects, f32* t, s32* idx_obj) {
+    const BVHNode& node = tree[nodeIdx];
+
+    f32 t_entry = ray_aabb_intersect(ray, node.bbox);
+    // TODO(alex): better check, we could be IN the bbox
+    if (t_entry <= 0.0f) {
+        return;
+    }
+
+    if (node.nObjects != 0) {
+        for (u32 i=0; i<node.nObjects; i++) {
+            f32 tmp = ray_sphere_intersect(ray, objects[node.startObjects+i]);
+            if ((tmp>0.0f) && (tmp < *t)){
+                *t = tmp;
+                *idx_obj = i;
+            }
+        }
+        return;
+    }
+
+    traverse_bvh_hierarchy(ray, tree, node.leftIndex,   objects, t, idx_obj);
+    traverse_bvh_hierarchy(ray, tree, node.leftIndex+1, objects, t, idx_obj);
 }

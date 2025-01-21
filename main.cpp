@@ -265,8 +265,9 @@ void second_scene(const char* filepath) {
     // AABB aabb = aabb_sphere(spheres[1]);
 
     const u32 n_nodes = 2 * n_spheres - 1;
-    BVHNode bvhnode[n_nodes];
-    create_bvh_hierarchy(bvhnode, spheres, n_spheres);
+    u32 rootIdx = 0;
+    BVHNode tree[n_nodes];
+    create_bvh_hierarchy(tree, spheres, n_spheres);
 
     for (u32 h=0; h<image.height; ++h) {
         for (u32 w=0; w<image.width; ++w) {
@@ -284,42 +285,22 @@ void second_scene(const char* filepath) {
 
                 // Go through BB and Sphere
                 f32 t = FLT_MAX;
-                int idx_sph = -1;
+                s32 idx_sph = -1;
 
-                for (u32 i=0; i<n_spheres; i++) {
-                    f32 tmp = ray_sphere_intersect(ray, spheres[i]);
-                    if ((tmp>0.0f) && (tmp < t)){
-                        t = tmp;
-                        idx_sph = i;
+                if (1) {
+                    traverse_bvh_hierarchy(ray, tree, rootIdx, spheres, &t, &idx_sph);
+                } else {
+                    for (u32 i=0; i<n_spheres; i++) {
+                        f32 tmp = ray_sphere_intersect(ray, spheres[i]);
+                        if ((tmp>0.0f) && (tmp < t)){
+                            t = tmp;
+                            idx_sph = i;
+                        }
                     }
                 }
 
-                int idx_seg = -1;
-
-                f32 tmp = ray_aabb_intersect(ray, bvhnode[4].bbox);
-                if ((tmp>0.0f) && (tmp < t)){
-                    t = tmp;
-                    idx_seg = 1;
-                }
-
-                // n_nodes = 3;
-                // for (u32 i=0; i<n_nodes; i++) {
-                //     Segment segments[12];
-                //     create_segments_from_aabb(segments, bvhnode[i].bbox);
-
-                //     for (u32 i=0; i<12; i++) {
-                //         f32 tmp = ray_segment_intersect(ray, segments[i]);
-                //         if ((tmp>0.0f) && (tmp < t)){
-                //             t = tmp;
-                //             idx_seg = i;
-                //         }
-                //     }
-                // }
-
                 f32x3 partial_pixel_colour;
-                if (idx_seg != -1) {
-                    partial_pixel_colour = {1.0f, 0.0f, 0.0f};
-                } else if (idx_sph != -1) {
+                if (idx_sph != -1) {
                     partial_pixel_colour = {0.3f, 0.8f, 0.3f};
                 } else {
                     partial_pixel_colour = {0.6f, 0.6f, 0.8f};
