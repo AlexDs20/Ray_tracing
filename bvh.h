@@ -79,19 +79,13 @@ AABB aabb_segment(const Segment& s) {
 
 struct BVHNode {
     AABB bbox = {.low={FLT_MAX, FLT_MAX, FLT_MAX}, .high={-FLT_MAX, -FLT_MAX, -FLT_MAX}};
-    u32 leftIndex;
-    u32 startObjects, nObjects;
-};
+    union {
+        u32 leftIndex;
+        u32 startObjects;
+    };
+    u32 nObjects;
 
-void print(BVHNode* node, u32 nodes_used=-1) {
-    printf(
-        "node_used: %d\nleftIdx: %d\nstartObj: %d\nnObjects: %d\n",
-        nodes_used,
-        node->leftIndex,
-        node->startObjects,
-        node->nObjects
-    );
-}
+};
 
 
 AABB create_aabb_from_objects(Sphere* objects, u32 N) {
@@ -138,22 +132,23 @@ void split_node(BVHNode* tree, BVHNode* node, Sphere* objects, u32& nodes_used) 
         return;
     }
 
+    // Save temporarily where the objects starts
+    // This is because startObjects and leftIndex use the same "bytes/variable"
+    u32 startObjects = node->startObjects;
+
+    // Create the nodes
     // Assign the leaves and reset the associated objects then
     node->leftIndex = nodes_used++;
     nodes_used++;                       // for right index
 
-    // Create the nodes
     BVHNode* leftNode = &tree[node->leftIndex];
     BVHNode* rightNode = &tree[node->leftIndex+1];
 
-
-    leftNode->startObjects = node->startObjects;
-    leftNode->nObjects = i - node->startObjects;
-    leftNode->leftIndex = 0;
+    leftNode->startObjects = startObjects;
+    leftNode->nObjects = i - startObjects;
 
     rightNode->startObjects = i;
     rightNode->nObjects = node->nObjects - leftNode->nObjects;
-    rightNode->leftIndex = 0;
 
     leftNode->bbox = create_aabb_from_objects(&objects[leftNode->startObjects], leftNode->nObjects);
     rightNode->bbox = create_aabb_from_objects(&objects[rightNode->startObjects], rightNode->nObjects);
@@ -161,7 +156,6 @@ void split_node(BVHNode* tree, BVHNode* node, Sphere* objects, u32& nodes_used) 
     split_node(tree, leftNode, objects, nodes_used);
     split_node(tree, rightNode, objects, nodes_used);
 
-    node->startObjects = 0;
     node->nObjects = 0;
 }
 
@@ -196,7 +190,7 @@ void traverse_bvh_hierarchy(const Ray& ray, BVHNode* tree, u32 nodeIdx, const Sp
             f32 tmp = ray_sphere_intersect(ray, objects[node.startObjects+i]);
             if ((tmp>0.0f) && (tmp < *t)){
                 *t = tmp;
-                *idx_obj = i;
+                *idx_obj = node.startObjects+i;
             }
         }
         return;
