@@ -213,21 +213,23 @@ void print(const BVHNode* node) {
 void traverse_bvh_hierarchy_non_rec(const Ray& ray, BVHNode* tree, u32 nodeIdx, const Sphere* objects, f32* t, s32* idx_obj) {
     BVHNode* node = &tree[nodeIdx];
 
-    BVHNode* stack[256];
+    BVHNode* stack[2048];
     s32 stack_idx = -1;
 
     while(1) {
         if (node->nObjects != 0) {
             // Go through each triangles
+            f32 tmp = FLOAT_MAX;
             for (u32 i=0; i<node->nObjects; i++) {
-                f32 tmp = ray_sphere_intersect(ray, objects[node->startObjects + i]);
+                tmp = ray_sphere_intersect(ray, objects[node->startObjects + i]);
                 if ((tmp>0.0f) && (tmp<*t)) {
                     *t = tmp;
                     *idx_obj = node->startObjects+i;
                 }
             }
-
-            if (stack_idx >= 0) {
+            if (tmp != FLOAT_MAX) {
+                break;
+            } else if (stack_idx >= 0) {
                 node = stack[stack_idx--];
                 continue;
             } else {
@@ -240,8 +242,7 @@ void traverse_bvh_hierarchy_non_rec(const Ray& ray, BVHNode* tree, u32 nodeIdx, 
             f32 left_t = ray_aabb_intersect(ray, left_node->bbox);
             f32 right_t = ray_aabb_intersect(ray, right_node->bbox);
 
-            // TODO(alex): default returned value should not be 0.0f if bad => cause problems here.
-            if (left_t == 0.0f && right_t == 0.0f) {
+            if (left_t == FLOAT_MAX && right_t == FLOAT_MAX) {
                 if (stack_idx >= 0) {
                     node = stack[stack_idx--];
                 } else {
@@ -249,10 +250,14 @@ void traverse_bvh_hierarchy_non_rec(const Ray& ray, BVHNode* tree, u32 nodeIdx, 
                 }
             } else if (left_t < right_t) {
                 node = left_node;
-                stack[++stack_idx] = right_node;
+                if (right_t != FLOAT_MAX) {
+                    stack[++stack_idx] = right_node;
+                }
             } else {
                 node = right_node;
-                stack[++stack_idx] = left_node;
+                if (left_t != FLOAT_MAX) {
+                    stack[++stack_idx] = left_node;
+                }
             }
         }
     }

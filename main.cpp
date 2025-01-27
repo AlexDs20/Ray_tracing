@@ -44,7 +44,7 @@ cast_ray(Ray& ray, World* world, u32 max_depth) {
     f32x3 out_colour = { 1.0f,  1.0f,  1.0f };
 
     for (u32 depth=0; depth<max_depth; depth++) {
-        f32 t = FLT_MAX;
+        f32 t = FLOAT_MAX;
         int s = -1;
 
         for (u32 i=0; i<n_spheres; i++) {
@@ -136,7 +136,7 @@ void first_scene(const char* filepath) {
     AllocateImage(image.width, image.height);
 
     const u32 max_depth = 32;
-    const u32 rays_per_pixel = 1;
+    const u32 rays_per_pixel = 64;
     const f32 rpp_factor = 1.0f / rays_per_pixel;
 
     Camera camera;
@@ -253,7 +253,7 @@ void second_scene(const char* filepath) {
     camera.w_dir = cross(camera.dir, camera.up);
     camera.h_dir = cross(camera.w_dir, camera.dir);
 
-    const u32 n_spheres = 64;
+    const u32 n_spheres = 2048;
     Sphere spheres[n_spheres] = {};
     for (u32 i=0; i<n_spheres; i++) {
         spheres[i].O = {
@@ -284,7 +284,7 @@ void second_scene(const char* filepath) {
                 Ray ray = { camera.O, normalize(pixel_pos - camera.O) };
 
                 // Go through BB and Sphere
-                f32 t = FLT_MAX;
+                f32 t = FLOAT_MAX;
                 s32 idx_sph = -1;
 
                 if (1) {

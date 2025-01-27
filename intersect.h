@@ -14,7 +14,7 @@ f32 ray_sphere_intersect(const Ray& ray, const Sphere& sphere) {
     f32 delta = half_b*half_b - a * c;
 
     if (delta < 0) {
-        return 0.0f;
+        return FLOAT_MAX;
     }
 
     f32 t = (half_b - sqrt(delta))/a;
@@ -37,7 +37,7 @@ f32 ray_segment_intersect(const Ray& ray, const Segment& segment) {
 
     // Check that not coplanar
     if ( abs(dot(c, axb)) > 0.005f) {
-        return 0.0f;
+        return FLOAT_MAX;
     }
 
     f32 s = dot(cross(c, b), axb) / length2(axb);
@@ -45,7 +45,7 @@ f32 ray_segment_intersect(const Ray& ray, const Segment& segment) {
         f32 t = dot(cross(c, a), axb) / length2(axb);
         return t;
     }
-    return 0.0f;
+    return FLOAT_MAX;
 }
 
 f32 ray_triangles_intersect(const Ray& ray, const Triangle& triangle) {
@@ -55,7 +55,7 @@ f32 ray_triangles_intersect(const Ray& ray, const Triangle& triangle) {
     const f32 a = dot( edge1, h );
 
     if ( abs(a) < EPS ) {
-        return 0.0f; // ray parallel to triangle
+        return FLOAT_MAX; // ray parallel to triangle
     }
 
     const f32 f = 1.0f / a;
@@ -63,13 +63,13 @@ f32 ray_triangles_intersect(const Ray& ray, const Triangle& triangle) {
     const f32 u = f * dot( s, h );
 
     if (u < 0 || u > 1) {
-        return 0.0f;
+        return FLOAT_MAX;
     }
 
     const f32x3 q = cross( s, edge1 );
     const f32 v = f * dot( ray.dir, q );
     if (v < 0 || u + v > 1) {
-        return 0.0f;
+        return FLOAT_MAX;
     }
 
     const float t = f * dot( edge2, q );
@@ -77,7 +77,7 @@ f32 ray_triangles_intersect(const Ray& ray, const Triangle& triangle) {
         return t;
     }
 
-    return 0.0f;
+    return FLOAT_MAX;
 }
 
 f32 ray_aabb_intersect(const Ray& ray, const AABB& aabb) {
@@ -93,6 +93,6 @@ f32 ray_aabb_intersect(const Ray& ray, const AABB& aabb) {
     if (t_exit > 0 && t_entry < t_exit) {
         return t_entry;
     } else {
-        return 0.0f;
+        return FLOAT_MAX;
     }
 }

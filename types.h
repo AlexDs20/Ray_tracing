@@ -3,6 +3,7 @@
 #include <math.h>
 
 #define EPS 1e-5f
+#define FLOAT_MAX 340282346638528859811704183484516925440.0f
 
 typedef char unsigned u8;
 typedef short unsigned u16;
