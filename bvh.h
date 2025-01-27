@@ -84,7 +84,6 @@ struct BVHNode {
         u32 startObjects;
     };
     u32 nObjects;
-
 };
 
 
@@ -198,4 +197,63 @@ void traverse_bvh_hierarchy(const Ray& ray, BVHNode* tree, u32 nodeIdx, const Sp
 
     traverse_bvh_hierarchy(ray, tree, node.leftIndex,   objects, t, idx_obj);
     traverse_bvh_hierarchy(ray, tree, node.leftIndex+1, objects, t, idx_obj);
+}
+
+
+void print(const BVHNode* node) {
+    printf(
+            "min: (%.5f,%.5f,%.5f), max: (%.5f,%.5f,%.5f), startIdx: %d, nObjects: %d\n",
+            node->bbox.low.x, node->bbox.low.y, node->bbox.low.z,
+            node->bbox.high.x, node->bbox.high.y, node->bbox.high.z,
+            node->leftIndex,
+            node->nObjects
+    );
+}
+
+void traverse_bvh_hierarchy_non_rec(const Ray& ray, BVHNode* tree, u32 nodeIdx, const Sphere* objects, f32* t, s32* idx_obj) {
+    BVHNode* node = &tree[nodeIdx];
+
+    BVHNode* stack[256];
+    s32 stack_idx = -1;
+
+    while(1) {
+        if (node->nObjects != 0) {
+            // Go through each triangles
+            for (u32 i=0; i<node->nObjects; i++) {
+                f32 tmp = ray_sphere_intersect(ray, objects[node->startObjects + i]);
+                if ((tmp>0.0f) && (tmp<*t)) {
+                    *t = tmp;
+                    *idx_obj = node->startObjects+i;
+                }
+            }
+
+            if (stack_idx >= 0) {
+                node = stack[stack_idx--];
+                continue;
+            } else {
+                break;
+            }
+        } else {
+            BVHNode* left_node = &tree[node->leftIndex];
+            BVHNode* right_node = &tree[node->leftIndex+1];
+
+            f32 left_t = ray_aabb_intersect(ray, left_node->bbox);
+            f32 right_t = ray_aabb_intersect(ray, right_node->bbox);
+
+            // TODO(alex): default returned value should not be 0.0f if bad => cause problems here.
+            if (left_t == 0.0f && right_t == 0.0f) {
+                if (stack_idx >= 0) {
+                    node = stack[stack_idx--];
+                } else {
+                    break;
+                }
+            } else if (left_t < right_t) {
+                node = left_node;
+                stack[++stack_idx] = right_node;
+            } else {
+                node = right_node;
+                stack[++stack_idx] = left_node;
+            }
+        }
+    }
 }

@@ -2,6 +2,8 @@
 #include <cstdlib>
 #include <cfloat>
 
+#define TINYOBJ_LOADER_C_IMPLEMENTATION
+#include "tinyobj_loader_c.h"
 #include "bvh.h"
 #include "types.h"
 #include "image.h"
@@ -109,6 +111,25 @@ cast_ray(Ray& ray, World* world, u32 max_depth) {
     }
     return out_colour;
 }
+
+/*
+ * void FasterRaysApp::Init()
+   {
+       FILE* file = fopen( "assets/unity.tri", "r" );
+       float a, b, c, d, e, f, g, h, i;
+       for (int t = 0; t < N; t++)
+       {
+       fscanf( file, "%f %f %f %f %f %f %f %f %f\n",
+       &a, &b, &c, &d, &e, &f, &g, &h, &i );
+       tri[t].vertex0 = float3( a, b, c );
+       tri[t].vertex1 = float3( d, e, f );
+       tri[t].vertex2 = float3( g, h, i );
+       }
+       fclose( file );
+       // construct the BVH
+       BuildBVH();
+   }
+ */
 
 void first_scene(const char* filepath) {
     Image image = AllocateImage(1024, 576);
@@ -232,37 +253,16 @@ void second_scene(const char* filepath) {
     camera.w_dir = cross(camera.dir, camera.up);
     camera.h_dir = cross(camera.w_dir, camera.dir);
 
-    const u32 n_spheres = 50;
+    const u32 n_spheres = 64;
     Sphere spheres[n_spheres] = {};
     for (u32 i=0; i<n_spheres; i++) {
         spheres[i].O = {
-            random_in_range(-4.0f, 4.0f),
-            random_in_range(-4.0f, 4.0f),
-            random_in_range(-4.0f, 4.0f),
+            random_in_range(-5.0f, 5.0f),
+            random_in_range(-5.0f, 5.0f),
+            random_in_range(-5.0f, 5.0f),
         };
         spheres[i].r = random_in_range(0.05f, 0.5f);
     }
-    if (0){
-        spheres[0].O = {0.0f, 0.0f, 0.0f};
-        spheres[0].r = 0.2f;
-
-        spheres[1].O = {-1.5f, 0.5f, 0.5f};
-        spheres[1].r = 0.2f;
-
-        spheres[2].O = {0.0f, 1.15f, 1.2f};
-        spheres[2].r = 0.2f;
-
-        spheres[3].O = {0.5f, 0.5f, 0.0f};
-        spheres[3].r = 0.2f;
-
-        spheres[4].O = {-1.0f, -1.0f, -1.0f};
-        spheres[4].r = 0.3f;
-
-        spheres[5].O = {2.5f, -0.4f, 1.5f};
-        spheres[5].r = 0.3f;
-    }
-
-    // AABB aabb = aabb_sphere(spheres[1]);
 
     const u32 n_nodes = 2 * n_spheres - 1;
     u32 rootIdx = 0;
@@ -288,7 +288,8 @@ void second_scene(const char* filepath) {
                 s32 idx_sph = -1;
 
                 if (1) {
-                    traverse_bvh_hierarchy(ray, tree, rootIdx, spheres, &t, &idx_sph);
+                    // traverse_bvh_hierarchy(ray, tree, rootIdx, spheres, &t, &idx_sph);
+                    traverse_bvh_hierarchy_non_rec(ray, tree, rootIdx, spheres, &t, &idx_sph);
                 } else {
                     for (u32 i=0; i<n_spheres; i++) {
                         f32 tmp = ray_sphere_intersect(ray, spheres[i]);
@@ -320,6 +321,7 @@ void second_scene(const char* filepath) {
 
 
 int main(int argc, char** argv) {
-    // first_scene(argv[1]);
-    second_scene(argv[1]);
+    const char* filename = argv[1];
+    // first_scene(filename);
+    second_scene(filename);
 }

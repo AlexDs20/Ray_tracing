@@ -90,5 +90,9 @@ f32 ray_aabb_intersect(const Ray& ray, const AABB& aabb) {
     f32 t_exit = f32min(t_out.z, f32min(t_out.x, t_out.y));
     f32 t_entry = f32max(t_in.z, f32max(t_in.x, t_in.y));
 
-    return t_entry < t_exit ? t_entry : 0.0f;
+    if (t_exit > 0 && t_entry < t_exit) {
+        return t_entry;
+    } else {
+        return 0.0f;
+    }
 }
