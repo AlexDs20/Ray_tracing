@@ -44,6 +44,7 @@ struct AABB {
 struct Ray {
     f32x3 O;
     f32x3 dir;
+    f32x3 inv_dir;
     // f32 refrective_index;
 };
 

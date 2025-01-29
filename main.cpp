@@ -1,9 +1,8 @@
 #include <stdlib.h>
 #include <cstdlib>
 #include <cfloat>
+#include <time.h>
 
-#define TINYOBJ_LOADER_C_IMPLEMENTATION
-#include "tinyobj_loader_c.h"
 #include "bvh.h"
 #include "types.h"
 #include "image.h"
@@ -253,13 +252,14 @@ void second_scene(const char* filepath) {
     camera.w_dir = cross(camera.dir, camera.up);
     camera.h_dir = cross(camera.w_dir, camera.dir);
 
-    const u32 n_spheres = 2048;
+    const u32 n_spheres = 1<<16;
+    printf("Number of spheres: %d\n", n_spheres);
     Sphere spheres[n_spheres] = {};
     for (u32 i=0; i<n_spheres; i++) {
         spheres[i].O = {
-            random_in_range(-5.0f, 5.0f),
-            random_in_range(-5.0f, 5.0f),
-            random_in_range(-5.0f, 5.0f),
+            random_in_range(-50.0f, 50.0f),
+            random_in_range(-50.0f, 50.0f),
+            random_in_range(-50.0f, 50.0f),
         };
         spheres[i].r = random_in_range(0.05f, 0.5f);
     }
@@ -267,11 +267,18 @@ void second_scene(const char* filepath) {
     const u32 n_nodes = 2 * n_spheres - 1;
     u32 rootIdx = 0;
     BVHNode tree[n_nodes];
+
+    clock_t start = clock(), diff;
+
     create_bvh_hierarchy(tree, spheres, n_spheres);
 
+    diff = clock() - start;
+    int msec = diff * 1000 / CLOCKS_PER_SEC;
+    printf("Creating BVH: %d ms\n", msec);
+
+    start = clock();
     for (u32 h=0; h<image.height; ++h) {
         for (u32 w=0; w<image.width; ++w) {
-
             f32x3 pixel_colour = {0.0f, 0.0f, 0.0f};
 
             for (u32 ray_idx=0; ray_idx<rays_per_pixel; ray_idx++) {
@@ -282,6 +289,7 @@ void second_scene(const char* filepath) {
 
                 f32x3 pixel_pos = camera.viewportCenter + w_shift * camera.w_dir + h_shift*camera.h_dir;
                 Ray ray = { camera.O, normalize(pixel_pos - camera.O) };
+                ray.inv_dir = 1.0f / ray.dir;
 
                 // Go through BB and Sphere
                 f32 t = FLOAT_MAX;
@@ -314,8 +322,15 @@ void second_scene(const char* filepath) {
             image.colours[w + h*image.width] = { (u8)c.r, (u8)c.g, (u8)c.b };
         }
     }
+    diff = clock() - start;
+    msec = diff * 1000 / CLOCKS_PER_SEC;
+    printf("Ray tracing: %d ms\n", msec);
 
+    start = clock();
     SaveImage(image, filepath);
+    diff = clock() - start;
+    msec = diff * 1000 / CLOCKS_PER_SEC;
+    printf("Write to file: %d ms\n", msec);
     free(image.colours);
 }
 

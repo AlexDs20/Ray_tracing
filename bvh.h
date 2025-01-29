@@ -180,7 +180,7 @@ void traverse_bvh_hierarchy(const Ray& ray, BVHNode* tree, u32 nodeIdx, const Sp
 
     f32 t_entry = ray_aabb_intersect(ray, node.bbox);
     // TODO(alex): better check, we could be IN the bbox
-    if (t_entry <= 0.0f) {
+    if (t_entry == FLOAT_MAX) {
         return;
     }
 
@@ -210,10 +210,28 @@ void print(const BVHNode* node) {
     );
 }
 
+#include <stdint.h>
+
+template <class T>
+void swap(T& a, T& b) {
+    // a = (T)((uintptr_t)a + (uintptr_t)b);
+    // b = (T)((uintptr_t)a - (uintptr_t)b);
+    // a = (T)((uintptr_t)a - (uintptr_t)b);
+
+    // a = (T)((uintptr_t)a ^ (uintptr_t)b);
+    // b = (T)((uintptr_t)a ^ (uintptr_t)b);
+    // a = (T)((uintptr_t)a ^ (uintptr_t)b);
+
+    T tmp = a;
+    a = b;
+    b = tmp;
+}
+
 void traverse_bvh_hierarchy_non_rec(const Ray& ray, BVHNode* tree, u32 nodeIdx, const Sphere* objects, f32* t, s32* idx_obj) {
     BVHNode* node = &tree[nodeIdx];
 
-    BVHNode* stack[2048];
+    // Works up to 4_000_000_000 objects (2^32 as long as I use binary trees)
+    BVHNode* stack[32];
     s32 stack_idx = -1;
 
     while(1) {
@@ -227,36 +245,33 @@ void traverse_bvh_hierarchy_non_rec(const Ray& ray, BVHNode* tree, u32 nodeIdx, 
                     *idx_obj = node->startObjects+i;
                 }
             }
-            if (tmp != FLOAT_MAX) {
+            if (tmp != FLOAT_MAX || stack_idx < 0) {
                 break;
-            } else if (stack_idx >= 0) {
+            } else {
                 node = stack[stack_idx--];
                 continue;
-            } else {
-                break;
             }
         } else {
-            BVHNode* left_node = &tree[node->leftIndex];
-            BVHNode* right_node = &tree[node->leftIndex+1];
+            BVHNode* node1 = &tree[node->leftIndex];
+            BVHNode* node2 = &tree[node->leftIndex+1];
 
-            f32 left_t = ray_aabb_intersect(ray, left_node->bbox);
-            f32 right_t = ray_aabb_intersect(ray, right_node->bbox);
+            f32 t1 = ray_aabb_intersect(ray, node1->bbox);
+            f32 t2 = ray_aabb_intersect(ray, node2->bbox);
 
-            if (left_t == FLOAT_MAX && right_t == FLOAT_MAX) {
+            if (t1 > t2) {
+                swap(t1, t2);
+                swap(node1, node2);
+            }
+            if (t1 == FLOAT_MAX) {
                 if (stack_idx >= 0) {
                     node = stack[stack_idx--];
                 } else {
                     break;
                 }
-            } else if (left_t < right_t) {
-                node = left_node;
-                if (right_t != FLOAT_MAX) {
-                    stack[++stack_idx] = right_node;
-                }
-            } else {
-                node = right_node;
-                if (left_t != FLOAT_MAX) {
-                    stack[++stack_idx] = left_node;
+            } else  {
+                node = node1;
+                if (t2 != FLOAT_MAX) {
+                    stack[++stack_idx] = node2;
                 }
             }
         }

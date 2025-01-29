@@ -76,38 +76,41 @@ f32 dot(const f32x3 a, const f32x3 b) {
     return a.x*b.x + a.y*b.y + a.z*b.z;
 }
 
-f32x3 operator+(float a, f32x3 v) {
+f32x3 operator+(f32 a, f32x3 v) {
     return { a+v.x, a+v.y, a+v.z };
 }
-f32x3 operator+(f32x3 v, float a) {
+f32x3 operator+(f32x3 v, f32 a) {
     return { a+v.x, a+v.y, a+v.z };
-}
-f32x3 operator-(f32x3 v) {
-    return { -v.x, -v.y, -v.z };
-}
-f32x3 operator-(float a, f32x3 v) {
-    return { a-v.x, a-v.y, a-v.z };
-}
-f32x3 operator-(f32x3 v, float a) {
-    return { v.x-a, v.y-a, v.z-a };
-}
-f32x3 operator*(float a, f32x3 v) {
-    return { a*v.x, a*v.y, a*v.z };
-}
-f32x3 operator*(f32x3 v, float a) {
-    return { a*v.x, a*v.y, a*v.z };
-}
-f32x3 operator/(f32x3 v, float a) {
-    return { v.x/a, v.y/a, v.z/a };
-}
-f32x3 operator-(f32x3 a, f32x3 v) {
-    return { a.x-v.x, a.y-v.y, a.z-v.z };
 }
 f32x3 operator+(f32x3 a, f32x3 v) {
     return { a.x+v.x, a.y+v.y, a.z+v.z };
 }
-f32x3 operator*(f32x3 a, f32x3 v) {
+f32x3 operator-(f32x3 v) {
+    return { -v.x, -v.y, -v.z };
+}
+f32x3 operator-(f32 a, f32x3 v) {
+    return { a-v.x, a-v.y, a-v.z };
+}
+f32x3 operator-(f32x3 v, f32 a) {
+    return { v.x-a, v.y-a, v.z-a };
+}
+f32x3 operator-(const f32x3& a, const f32x3& v) {
+    return { a.x-v.x, a.y-v.y, a.z-v.z };
+}
+f32x3 operator*(f32 a, f32x3 v) {
+    return { a*v.x, a*v.y, a*v.z };
+}
+f32x3 operator*(f32x3 v, f32 a) {
+    return { a*v.x, a*v.y, a*v.z };
+}
+f32x3 operator*(const f32x3& a, const f32x3& v) {
     return { a.x*v.x, a.y*v.y, a.z*v.z };
+}
+f32x3 operator/(f32x3 v, f32 a) {
+    return { v.x/a, v.y/a, v.z/a };
+}
+f32x3 operator/(f32 a, f32x3 v) {
+    return { a/v.x, a/v.y, a/v.z };
 }
 f32 length(f32x3 a) {
     return sqrt(a.x*a.x + a.y*a.y + a.z*a.z);

@@ -1,7 +1,13 @@
 #pragma once
 #include <math.h>
+#include <stdio.h>
 #include "types.h"
 #include "object.h"
+
+// #define __AVX
+#ifdef __AVX
+#include <immintrin.h>
+#endif
 
 f32 ray_sphere_intersect(const Ray& ray, const Sphere& sphere) {
     f32x3 C = sphere.O;
@@ -81,8 +87,11 @@ f32 ray_triangles_intersect(const Ray& ray, const Triangle& triangle) {
 }
 
 f32 ray_aabb_intersect(const Ray& ray, const AABB& aabb) {
-    f32x3 t1 = HadamardDivision(aabb.low - ray.O, ray.dir);
-    f32x3 t2 = HadamardDivision(aabb.high - ray.O, ray.dir);
+#ifndef __AVX
+    // f32x3 t1 = HadamardDivision(aabb.low - ray.O, ray.dir);
+    // f32x3 t2 = HadamardDivision(aabb.high - ray.O, ray.dir);
+    f32x3 t1 = (aabb.low - ray.O) * ray.inv_dir;
+    f32x3 t2 = (aabb.high - ray.O) * ray.inv_dir;
 
     f32x3 t_in = HadamardMin(t1, t2);
     f32x3 t_out = HadamardMax(t1, t2);
@@ -95,4 +104,32 @@ f32 ray_aabb_intersect(const Ray& ray, const AABB& aabb) {
     } else {
         return FLOAT_MAX;
     }
+#else
+    // I get no improvements if -O2 => probably this is what the compiler does if using non vectorized code.
+    const __m128i mask = _mm_set_epi32(0, -1, -1, -1);
+    __m128 low = _mm_maskload_ps(&aabb.low.x, mask);
+    __m128 high = _mm_maskload_ps(&aabb.high.x, mask);
+    __m128 inv_dir = _mm_maskload_ps(&ray.inv_dir.x, mask);
+    __m128 ray_o = _mm_maskload_ps(&ray.O.x, mask);
+
+    __m128 t1 = _mm_mul_ps(_mm_sub_ps(low, ray_o), inv_dir);
+    __m128 t2 = _mm_mul_ps(_mm_sub_ps(high, ray_o), inv_dir);
+
+    __m128 t_in = _mm_min_ps(t1, t2);
+    __m128 t_out = _mm_max_ps(t1, t2);
+
+    float t_in_f[4];
+    float t_out_f[4];
+    _mm_store_ps(&t_in_f[0], t_in);
+    _mm_store_ps(&t_out_f[0], t_out);
+
+    f32 t_exit = f32min(t_out_f[2], f32min(t_out_f[0], t_out_f[1]));
+    f32 t_entry = f32max(t_in_f[2], f32max(t_in_f[0], t_in_f[1]));
+
+    if (t_exit > 0 && t_entry < t_exit) {
+        return t_entry;
+    } else {
+        return FLOAT_MAX;
+    }
+#endif
 }
