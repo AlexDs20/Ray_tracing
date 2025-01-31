@@ -65,79 +65,79 @@ struct f32x4 {
 // };
 
 
-f32x3 cross(const f32x3 a, const f32x3 b) {
+inline f32x3 cross(const f32x3 a, const f32x3 b) {
     f32x3 out;
     out.x = a.y*b.z - a.z*b.y;
     out.y = a.z*b.x - a.x*b.z;
     out.z = a.x*b.y - a.y*b.x;
     return out;
 }
-f32 dot(const f32x3 a, const f32x3 b) {
+inline f32 dot(const f32x3 a, const f32x3 b) {
     return a.x*b.x + a.y*b.y + a.z*b.z;
 }
 
-f32x3 operator+(f32 a, f32x3 v) {
+inline f32x3 operator+(f32 a, f32x3 v) {
     return { a+v.x, a+v.y, a+v.z };
 }
-f32x3 operator+(f32x3 v, f32 a) {
+inline f32x3 operator+(f32x3 v, f32 a) {
     return { a+v.x, a+v.y, a+v.z };
 }
-f32x3 operator+(f32x3 a, f32x3 v) {
+inline f32x3 operator+(f32x3 a, f32x3 v) {
     return { a.x+v.x, a.y+v.y, a.z+v.z };
 }
-f32x3 operator-(f32x3 v) {
+inline f32x3 operator-(f32x3 v) {
     return { -v.x, -v.y, -v.z };
 }
-f32x3 operator-(f32 a, f32x3 v) {
+inline f32x3 operator-(f32 a, f32x3 v) {
     return { a-v.x, a-v.y, a-v.z };
 }
-f32x3 operator-(f32x3 v, f32 a) {
+inline f32x3 operator-(f32x3 v, f32 a) {
     return { v.x-a, v.y-a, v.z-a };
 }
-f32x3 operator-(const f32x3& a, const f32x3& v) {
+inline f32x3 operator-(const f32x3& a, const f32x3& v) {
     return { a.x-v.x, a.y-v.y, a.z-v.z };
 }
-f32x3 operator*(f32 a, f32x3 v) {
+inline f32x3 operator*(f32 a, f32x3 v) {
     return { a*v.x, a*v.y, a*v.z };
 }
-f32x3 operator*(f32x3 v, f32 a) {
+inline f32x3 operator*(f32x3 v, f32 a) {
     return { a*v.x, a*v.y, a*v.z };
 }
-f32x3 operator*(const f32x3& a, const f32x3& v) {
+inline f32x3 operator*(const f32x3& a, const f32x3& v) {
     return { a.x*v.x, a.y*v.y, a.z*v.z };
 }
-f32x3 operator/(f32x3 v, f32 a) {
+inline f32x3 operator/(f32x3 v, f32 a) {
     return { v.x/a, v.y/a, v.z/a };
 }
-f32x3 operator/(f32 a, f32x3 v) {
+inline f32x3 operator/(f32 a, f32x3 v) {
     return { a/v.x, a/v.y, a/v.z };
 }
-f32 length(f32x3 a) {
+inline f32 length(f32x3 a) {
     return sqrt(a.x*a.x + a.y*a.y + a.z*a.z);
 }
-f32 length2(f32x3 a) {
+inline f32 length2(f32x3 a) {
     return a.x*a.x + a.y*a.y + a.z*a.z;
 }
-f32x3 normalize(f32x3 a) {
+inline f32x3 normalize(f32x3 a) {
     f32 norm = length(a);
     return { a.x/norm, a.y/norm, a.z/norm };
 }
-f32x3& operator*=(f32x3& left, const f32x3 right) {
+inline f32x3& operator*=(f32x3& left, const f32x3 right) {
     left.x *= right.x;
     left.y *= right.y;
     left.z *= right.z;
     return left;
 }
-f32x3& operator+=(f32x3& left, const f32x3 right) {
+inline f32x3& operator+=(f32x3& left, const f32x3 right) {
     left.x += right.x;
     left.y += right.y;
     left.z += right.z;
     return left;
 }
-f32x3 sqrt(f32x3 a) {
+inline f32x3 sqrt(f32x3 a) {
     return { sqrt(a.x), sqrt(a.y), sqrt(a.z) };
 }
-f32x3 pow(f32x3 a, f32 power) {
+inline f32x3 pow(f32x3 a, f32 power) {
     return {
         pow(a.x, power),
         pow(a.y, power),
@@ -145,11 +145,11 @@ f32x3 pow(f32x3 a, f32 power) {
     };
 }
 
-f32x3 HadamardDivision(f32x3 num, f32x3 denum) {
+inline f32x3 HadamardDivision(f32x3 num, f32x3 denum) {
     return { num.x/denum.x, num.y/denum.y, num.z/denum.z };
 };
 
-f32x3 HadamardMin(const f32x3& left, const f32x3& right ) {
+inline f32x3 HadamardMin(const f32x3& left, const f32x3& right ) {
     return {
         fminf(left.x, right.x),
         fminf(left.y, right.y),
@@ -157,7 +157,7 @@ f32x3 HadamardMin(const f32x3& left, const f32x3& right ) {
     };
 }
 
-f32x3 HadamardMax(const f32x3& left, const f32x3& right ) {
+inline f32x3 HadamardMax(const f32x3& left, const f32x3& right ) {
     return {
         fmaxf(left.x, right.x),
         fmaxf(left.y, right.y),
@@ -165,10 +165,10 @@ f32x3 HadamardMax(const f32x3& left, const f32x3& right ) {
     };
 }
 
-f32 f32min(f32 a, f32 b) {
+inline f32 f32min(f32 a, f32 b) {
     return a<b ? a : b;
 }
 
-f32 f32max(f32 a, f32 b) {
+inline f32 f32max(f32 a, f32 b) {
     return a>b ? a : b;
 }

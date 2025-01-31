@@ -252,7 +252,7 @@ void second_scene(const char* filepath) {
     camera.w_dir = cross(camera.dir, camera.up);
     camera.h_dir = cross(camera.w_dir, camera.dir);
 
-    const u32 n_spheres = 1<<16;
+    const u32 n_spheres = 1<<15;
     printf("Number of spheres: %d\n", n_spheres);
     Sphere spheres[n_spheres] = {};
     for (u32 i=0; i<n_spheres; i++) {
@@ -326,11 +326,11 @@ void second_scene(const char* filepath) {
     msec = diff * 1000 / CLOCKS_PER_SEC;
     printf("Ray tracing: %d ms\n", msec);
 
-    start = clock();
-    SaveImage(image, filepath);
-    diff = clock() - start;
-    msec = diff * 1000 / CLOCKS_PER_SEC;
-    printf("Write to file: %d ms\n", msec);
+    // start = clock();
+    // SaveImage(image, filepath);
+    // diff = clock() - start;
+    // msec = diff * 1000 / CLOCKS_PER_SEC;
+    // printf("Write to file: %d ms\n", msec);
     free(image.colours);
 }
 
