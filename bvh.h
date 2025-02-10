@@ -78,11 +78,8 @@ AABB aabb_segment(const Segment& s) {
 
 
 struct BVHNode {
-    AABB bbox = {.low={FLT_MAX, FLT_MAX, FLT_MAX}, .high={-FLT_MAX, -FLT_MAX, -FLT_MAX}};
-    union {
-        u32 leftIndex;
-        u32 startObjects;
-    };
+    AABB bbox; // = {.low={FLT_MAX, FLT_MAX, FLT_MAX}, .high={-FLT_MAX, -FLT_MAX, -FLT_MAX}};
+    u32 startIndex;
     u32 nObjects;
 };
 
@@ -100,7 +97,38 @@ AABB create_aabb_from_objects(Sphere* objects, u32 N) {
 }
 
 
-void split_node(BVHNode* tree, BVHNode* node, Sphere* objects, u32& nodes_used) {
+inline f32 aabb_area(AABB& bbox) {
+    const f32x3 extent = bbox.high - bbox.low;
+    return extent.x*extent.y + extent.y*extent.z + extent.x*extent.z;
+}
+
+
+inline f32 compute_node_cost(BVHNode* node) {
+    return aabb_area(node->bbox) * node->nObjects;
+}
+
+
+f32 evaluate_split_SAH(BVHNode* node, Sphere* objects, u8 axis, f32 pos) {
+    AABB left  = {.low={FLT_MAX, FLT_MAX, FLT_MAX}, .high={-FLT_MAX, -FLT_MAX, -FLT_MAX}};
+    AABB right = {.low={FLT_MAX, FLT_MAX, FLT_MAX}, .high={-FLT_MAX, -FLT_MAX, -FLT_MAX}};
+    s32 left_count = 0, right_count = 0;
+    for (u32 i=0; i<node->nObjects; i++) {
+        Sphere object = objects[node->startIndex + i];
+        if (object.O.data[axis]<pos) {
+            left.low = HadamardMin(left.low, object.O-object.r);
+            left.high = HadamardMax(left.high, object.O+object.r);
+            left_count++;
+        } else {
+            right.low = HadamardMin(right.low, object.O-object.r);
+            right.high = HadamardMax(right.high, object.O+object.r);
+            right_count++;
+        }
+    }
+    return left_count * aabb_area(left) + right_count * aabb_area(right);
+}
+
+
+void split_node(BVHNode* tree, Sphere* objects, BVHNode* node, u32& nodes_used) {
     if (node->nObjects<=1) return;
 
     // Get axis to split bbox
@@ -111,7 +139,7 @@ void split_node(BVHNode* tree, BVHNode* node, Sphere* objects, u32& nodes_used) 
     f32 split = bbox.low.data[axis] + size.data[axis] * 0.5f;
 
     // Sort the objects between either sides of bbox
-    u32 i = node->startObjects;
+    u32 i = node->startIndex;
     u32 j = i + node->nObjects - 1;
 
     Sphere tmp;
@@ -127,33 +155,112 @@ void split_node(BVHNode* tree, BVHNode* node, Sphere* objects, u32& nodes_used) 
         }
     }
 
-    if (i==node->startObjects || i==node->startObjects+node->nObjects) {
+    if (i==node->startIndex || i==node->startIndex+node->nObjects) {
         return;
     }
 
     // Save temporarily where the objects starts
-    // This is because startObjects and leftIndex use the same "bytes/variable"
-    u32 startObjects = node->startObjects;
+    // This is because startIndex and startIndex use the same "bytes/variable"
+    u32 startIndex = node->startIndex;
 
     // Create the nodes
     // Assign the leaves and reset the associated objects then
-    node->leftIndex = nodes_used++;
+    node->startIndex = nodes_used++;
     nodes_used++;                       // for right index
 
-    BVHNode* leftNode = &tree[node->leftIndex];
-    BVHNode* rightNode = &tree[node->leftIndex+1];
+    BVHNode* leftNode = &tree[node->startIndex];
+    BVHNode* rightNode = &tree[node->startIndex+1];
 
-    leftNode->startObjects = startObjects;
-    leftNode->nObjects = i - startObjects;
+    leftNode->startIndex = startIndex;
+    leftNode->nObjects = i - startIndex;
 
-    rightNode->startObjects = i;
+    rightNode->startIndex = i;
     rightNode->nObjects = node->nObjects - leftNode->nObjects;
 
-    leftNode->bbox = create_aabb_from_objects(&objects[leftNode->startObjects], leftNode->nObjects);
-    rightNode->bbox = create_aabb_from_objects(&objects[rightNode->startObjects], rightNode->nObjects);
+    leftNode->bbox = create_aabb_from_objects(&objects[leftNode->startIndex], leftNode->nObjects);
+    rightNode->bbox = create_aabb_from_objects(&objects[rightNode->startIndex], rightNode->nObjects);
 
-    split_node(tree, leftNode, objects, nodes_used);
-    split_node(tree, rightNode, objects, nodes_used);
+    split_node(tree, objects, leftNode, nodes_used);
+    split_node(tree, objects, rightNode, nodes_used);
+
+    node->nObjects = 0;
+}
+
+
+void split_node_alt(BVHNode* tree, Sphere* objects, BVHNode* node, u32& nodes_used) {
+    // Get axis to split bbox
+    AABB& bbox = node->bbox;
+    f32x3 extent = bbox.high - bbox.low;
+    u8 axis = extent.x < extent.y ? 1 : 0;
+    axis = extent.data[axis] < extent.z ? 2 : axis;
+
+    // Test the splits
+    const u32 n_steps = 8;
+    const f32 step = extent.data[axis] / (n_steps+1);
+
+    f32 best_cost = FLOAT_MAX;
+    f32 best_pos;
+    f32 split_pos = node->bbox.low.data[axis];
+    for (u32 i=1; i<=n_steps; i++) {
+        split_pos += step;
+        f32 cost = evaluate_split_SAH(node, objects, axis, split_pos);
+        if (cost<best_cost) {
+            best_cost = cost;
+            best_pos = split_pos;
+        }
+    }
+
+    // check if it's work splitting
+    f32 this_cost = compute_node_cost(node);
+    if (best_cost>=this_cost) {
+        return;
+    }
+    const f32 split = best_pos;
+
+    // Sort the objects between either sides of bbox
+    u32 i = node->startIndex;
+    u32 j = i + node->nObjects - 1;
+
+    Sphere tmp;
+    while (i<=j) {
+        if (objects[i].O.data[axis] < split) {
+            i++;
+        } else {
+            // swap elements
+            tmp = objects[i];
+            objects[i] = objects[j];
+            objects[j] = tmp;
+            j--;
+        }
+    }
+
+    if (i==node->startIndex || i==node->startIndex+node->nObjects) {
+        return;
+    }
+
+    // Save temporarily where the objects starts
+    // This is because startIndex and startIndex use the same "bytes/variable"
+    u32 startIndex = node->startIndex;
+
+    // Create the nodes
+    // Assign the leaves and reset the associated objects then
+    node->startIndex = nodes_used++;
+    nodes_used++;                       // for right index
+
+    BVHNode* leftNode = &tree[node->startIndex];
+    BVHNode* rightNode = &tree[node->startIndex+1];
+
+    leftNode->startIndex = startIndex;
+    leftNode->nObjects = i - startIndex;
+
+    rightNode->startIndex = i;
+    rightNode->nObjects = node->nObjects - leftNode->nObjects;
+
+    leftNode->bbox = create_aabb_from_objects(&objects[leftNode->startIndex], leftNode->nObjects);
+    rightNode->bbox = create_aabb_from_objects(&objects[rightNode->startIndex], rightNode->nObjects);
+
+    split_node_alt(tree, objects, leftNode, nodes_used);
+    split_node_alt(tree, objects, rightNode, nodes_used);
 
     node->nObjects = 0;
 }
@@ -167,15 +274,16 @@ void create_bvh_hierarchy(BVHNode* tree, Sphere* objects, u32 N) {
     // Get BBOX of objects
     node->bbox = create_aabb_from_objects(objects, N);
 
-    node->leftIndex = 0;
+    node->startIndex = 0;
 
-    node->startObjects = 0;
+    node->startIndex = 0;
     node->nObjects = N;
 
-    split_node(tree, node, objects, nodes_used);
+    // split_node(tree, objects, node, nodes_used);
+    split_node_alt(tree, objects, node, nodes_used);
 }
 
-void traverse_bvh_hierarchy(const Ray& ray, BVHNode* tree, u32 nodeIdx, const Sphere* objects, f32* t, s32* idx_obj) {
+void traverse_bvh_hierarchy(const Ray& ray, BVHNode* tree, u32 nodeIdx, const Sphere* objects, f32* t, s32* idx_obj, u32& depth) {
     const BVHNode& node = tree[nodeIdx];
 
     f32 t_entry = ray_aabb_intersect(ray, node.bbox);
@@ -185,18 +293,20 @@ void traverse_bvh_hierarchy(const Ray& ray, BVHNode* tree, u32 nodeIdx, const Sp
     }
 
     if (node.nObjects != 0) {
+        depth++;
         for (u32 i=0; i<node.nObjects; i++) {
-            f32 tmp = ray_sphere_intersect(ray, objects[node.startObjects+i]);
+            f32 tmp = ray_sphere_intersect(ray, objects[node.startIndex+i]);
             if ((tmp>0.0f) && (tmp < *t)){
                 *t = tmp;
-                *idx_obj = node.startObjects+i;
+                *idx_obj = node.startIndex+i;
             }
         }
         return;
     }
+    depth++;
 
-    traverse_bvh_hierarchy(ray, tree, node.leftIndex,   objects, t, idx_obj);
-    traverse_bvh_hierarchy(ray, tree, node.leftIndex+1, objects, t, idx_obj);
+    traverse_bvh_hierarchy(ray, tree, node.startIndex,   objects, t, idx_obj, depth);
+    traverse_bvh_hierarchy(ray, tree, node.startIndex+1, objects, t, idx_obj, depth);
 }
 
 
@@ -205,7 +315,7 @@ void print(const BVHNode* node) {
             "min: (%.5f,%.5f,%.5f), max: (%.5f,%.5f,%.5f), startIdx: %d, nObjects: %d\n",
             node->bbox.low.x, node->bbox.low.y, node->bbox.low.z,
             node->bbox.high.x, node->bbox.high.y, node->bbox.high.z,
-            node->leftIndex,
+            node->startIndex,
             node->nObjects
     );
 }
@@ -227,33 +337,35 @@ void swap(T& a, T& b) {
     b = tmp;
 }
 
-void traverse_bvh_hierarchy_non_rec(const Ray& ray, BVHNode* tree, u32 nodeIdx, const Sphere* objects, f32* t, s32* idx_obj) {
+u32 traverse_bvh_hierarchy_non_rec(const Ray& ray, BVHNode* tree, u32 nodeIdx, const Sphere* objects, f32* t, s32* idx_obj) {
     BVHNode* node = &tree[nodeIdx];
 
     // Works up to 4_000_000_000 objects (2^32 as long as I use binary trees)
     BVHNode* stack[32];
     s32 stack_idx = -1;
 
+    u32 depth = 1;
+
     while(1) {
         if (node->nObjects != 0) {
             // Go through each triangles
             f32 tmp = FLOAT_MAX;
             for (u32 i=0; i<node->nObjects; i++) {
-                tmp = ray_sphere_intersect(ray, objects[node->startObjects + i]);
+                tmp = ray_sphere_intersect(ray, objects[node->startIndex + i]);
                 if ((tmp>0.0f) && (tmp<*t)) {
                     *t = tmp;
-                    *idx_obj = node->startObjects+i;
+                    *idx_obj = node->startIndex+i;
                 }
             }
-            if (tmp != FLOAT_MAX || stack_idx < 0) {
+            if (stack_idx < 0) {
                 break;
             } else {
                 node = stack[stack_idx--];
                 continue;
             }
         } else {
-            BVHNode* node1 = &tree[node->leftIndex];
-            BVHNode* node2 = &tree[node->leftIndex+1];
+            BVHNode* node1 = &tree[node->startIndex];
+            BVHNode* node2 = &tree[node->startIndex+1];
 
             f32 t1 = ray_aabb_intersect(ray, node1->bbox);
             f32 t2 = ray_aabb_intersect(ray, node2->bbox);
@@ -264,11 +376,13 @@ void traverse_bvh_hierarchy_non_rec(const Ray& ray, BVHNode* tree, u32 nodeIdx, 
             }
             if (t1 == FLOAT_MAX) {
                 if (stack_idx >= 0) {
+                    depth++;
                     node = stack[stack_idx--];
                 } else {
                     break;
                 }
             } else  {
+                depth++;
                 node = node1;
                 if (t2 != FLOAT_MAX) {
                     stack[++stack_idx] = node2;
@@ -276,4 +390,5 @@ void traverse_bvh_hierarchy_non_rec(const Ray& ray, BVHNode* tree, u32 nodeIdx, 
             }
         }
     }
+    return depth;
 }

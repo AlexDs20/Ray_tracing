@@ -36,6 +36,8 @@ struct Triangle {
 };
 
 struct AABB {
+    // f32x3 low = {FLOAT_MAX, FLOAT_MAX, FLOAT_MAX};
+    // f32x3 high = {-FLOAT_MAX, -FLOAT_MAX, -FLOAT_MAX};
     f32x3 low;
     f32x3 high;
 };

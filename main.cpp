@@ -252,16 +252,16 @@ void second_scene(const char* filepath) {
     camera.w_dir = cross(camera.dir, camera.up);
     camera.h_dir = cross(camera.w_dir, camera.dir);
 
-    const u32 n_spheres = 1<<15;
+    const u32 n_spheres = 1<<5;
     printf("Number of spheres: %d\n", n_spheres);
     Sphere spheres[n_spheres] = {};
     for (u32 i=0; i<n_spheres; i++) {
         spheres[i].O = {
-            random_in_range(-50.0f, 50.0f),
-            random_in_range(-50.0f, 50.0f),
-            random_in_range(-50.0f, 50.0f),
+            random_in_range(-5.0f, 5.0f),
+            random_in_range(-5.0f, 5.0f),
+            random_in_range(-5.0f, 5.0f),
         };
-        spheres[i].r = random_in_range(0.05f, 0.5f);
+        spheres[i].r = random_in_range(0.1f, 0.5f);
     }
 
     const u32 n_nodes = 2 * n_spheres - 1;
@@ -294,10 +294,11 @@ void second_scene(const char* filepath) {
                 // Go through BB and Sphere
                 f32 t = FLOAT_MAX;
                 s32 idx_sph = -1;
+                u32 depth = 0;
 
                 if (1) {
-                    // traverse_bvh_hierarchy(ray, tree, rootIdx, spheres, &t, &idx_sph);
-                    traverse_bvh_hierarchy_non_rec(ray, tree, rootIdx, spheres, &t, &idx_sph);
+                    traverse_bvh_hierarchy(ray, tree, rootIdx, spheres, &t, &idx_sph, depth);
+                    // depth = traverse_bvh_hierarchy_non_rec(ray, tree, rootIdx, spheres, &t, &idx_sph);
                 } else {
                     for (u32 i=0; i<n_spheres; i++) {
                         f32 tmp = ray_sphere_intersect(ray, spheres[i]);
@@ -315,7 +316,8 @@ void second_scene(const char* filepath) {
                     partial_pixel_colour = {0.6f, 0.6f, 0.8f};
                 }
 
-                pixel_colour += partial_pixel_colour;
+                // pixel_colour += partial_pixel_colour;
+                pixel_colour = depth * 0.01f * f32x3{1.0f, 1.0f, 0.0f};
 
             }
             f32x3 c = 255*gamma_correct(pixel_colour * rpp_factor);
@@ -326,11 +328,11 @@ void second_scene(const char* filepath) {
     msec = diff * 1000 / CLOCKS_PER_SEC;
     printf("Ray tracing: %d ms\n", msec);
 
-    // start = clock();
-    // SaveImage(image, filepath);
-    // diff = clock() - start;
-    // msec = diff * 1000 / CLOCKS_PER_SEC;
-    // printf("Write to file: %d ms\n", msec);
+    start = clock();
+    SaveImage(image, filepath);
+    diff = clock() - start;
+    msec = diff * 1000 / CLOCKS_PER_SEC;
+    printf("Write to file: %d ms\n", msec);
     free(image.colours);
 }
 
